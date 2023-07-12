@@ -1,0 +1,25 @@
+{
+	"name": "express-scholary",
+	"version": "1.0.0",
+	"description": "", 
+	"main": "build/index.js",
+	"scripts": {
+		"build": "rimraf ./build && tsc",
+		"start": "npm run build && node build/index.js",
+		"dev": "concurrently \"rimraf ./build\" \"npx tsc --watch\" \"nodemon src/index.ts\"",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"dependencies": {
+		"express": "^4.18.2"
+	},
+	"devDependencies": {
+		"@types/express": "^4.17.17",
+		"@types/node": "^20.4.1",
+		"concurrently": "^8.2.0",
+		"rimraf": "^5.0.1",
+		"typescript": "^5.1.6"
+	}
+}
