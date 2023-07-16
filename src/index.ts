@@ -2,7 +2,7 @@ import express from 'express';
 
 import { CONFIG } from './config/config';
 
-import notionRoute from './routes/notion.routes';
+import roadmapRoutes from './routes/roadmap.routes';
 
 const app = express();
 
@@ -12,6 +12,7 @@ app.get('/', (req, res) => {
 	res.send('Notion roadmap manipulator - Scholary');
 });
 
+app.use('/students', roadmapRoutes);
 const PORT = 8000;
 
 app.listen(PORT, () => {
