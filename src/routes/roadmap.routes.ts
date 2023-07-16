@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createRoadmap, getStudentRoadmap, publishRoadmap } from '../controllers/notion.controller';
+import { createRoadmap, getStudentRoadmap, publishRoadmap } from '../controllers/roadmap.controller';
 import { Schemas, ValidateJoi } from '../middleware/Joi';
 
 const router = Router();
