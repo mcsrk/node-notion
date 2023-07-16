@@ -43,6 +43,7 @@ export class NotionClient {
 		const result = pageResult;
 		return result;
 	}
+
 	async getPageBlockChildren(blockId: string): Promise<ListBlockChildrenResponse> {
 		const childrenList = await this.notion.blocks.children.list({
 			block_id: blockId,
@@ -125,5 +126,35 @@ export class NotionClient {
 		const createdBlocksResponse = await this.notion.blocks.children.append(blocksToAppend);
 		const result = createdBlocksResponse;
 		return result;
+	}
+
+	async createStudentRoadmap(studentName: string, pageBody: CreatePageParameters): Promise<string> {
+		const searchResult = await this.searchPage(studentName);
+
+		const existingPage = searchResult.results[0];
+
+		if (existingPage) {
+			/** This code deletes the code of a existing page, which takes a lot of time (3 mins per page/100 blocks) */
+			// const blocksToRemove = await this.notion.blocks.children.list({
+			// 	block_id: existingPage.id,
+			// 	page_size: CONFIG.ROADMAP_TEMPLATE.OVERRIDE_BLOCKS,
+			// });
+			// console.log(
+			// 	`Page '${studentName}' exists already (${existingPage.id}), removing ${blocksToRemove.results.length} blocks...`,
+			// );
+			// for (const block of blocksToRemove.results) {
+			// 	await this.notion.blocks.delete({ block_id: block.id });
+			// }
+
+			// return existingPage.id;
+			console.log(`Page '${studentName}' exists already (${existingPage.id}), archiving it...`);
+			const archiveRes = await this.archivePage(existingPage.id);
+			console.log(archiveRes);
+		}
+
+		console.log(`Page '${studentName}'' does not exist yet, creating it...`);
+
+		const pageCreationResponse = await this.createPage(pageBody);
+		return pageCreationResponse.id;
 	}
 }
