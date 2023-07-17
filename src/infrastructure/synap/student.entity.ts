@@ -1,7 +1,7 @@
 // Interface
 import { ISynapStudent } from './student.interface';
 
-const TAG = '[SynapStudent]';
+const FILE_TAG = '[SynapStudent]';
 
 export class SynapStudent implements ISynapStudent {
 	user: {
@@ -14,9 +14,7 @@ export class SynapStudent implements ISynapStudent {
 		// Validate and set user data
 		const userData = synapStudentData.user;
 		if (!(userData && userData.objectId && userData.name && userData.email)) {
-			const msg = `${TAG} user data is missing or invalid: ${JSON.stringify(userData)}.`;
-			console.log(msg);
-			throw new Error(msg);
+			throw new Error(`${FILE_TAG} user data is missing or invalid: ${JSON.stringify(userData)}.`);
 		}
 		this.user = userData;
 	}

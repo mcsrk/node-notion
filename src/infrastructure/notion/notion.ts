@@ -12,14 +12,20 @@ import {
 	UpdatePageResponse,
 } from '@notionhq/client/build/src/api-endpoints';
 
+// Config
 import { CONFIG } from '../../config/config';
+
+// Custom library
+import Logging from '../../library/Logging';
+
+const FILE_TAG = '[NotionClient]';
 
 export class NotionClient {
 	notion: Client;
 
 	constructor() {
 		if (!CONFIG.NOTION.INTEGRATION_TOKEN) {
-			throw new Error('No Notion Integration Token in .env');
+			throw new Error(`${FILE_TAG} No Notion Integration Token in .env`);
 		}
 
 		this.notion = new Client({
@@ -28,6 +34,8 @@ export class NotionClient {
 	}
 
 	async searchPage(searchTerm?: string): Promise<SearchResponse> {
+		const FUNC_TAG = '.[searchPage]';
+		Logging.info(`${FILE_TAG}${FUNC_TAG} Searchin page: ${searchTerm}`);
 		const result = await this.notion.search({
 			query: searchTerm,
 			filter: {
@@ -66,6 +74,7 @@ export class NotionClient {
 	}
 
 	async createStudentIdPage(studentId: string) {
+		const FUNC_TAG = '.[createStudentIdPage]';
 		const searchStudentIdPageRes = await this.searchPage(studentId);
 
 		const existingStudentIdPage = searchStudentIdPageRes.results[0];
@@ -75,8 +84,8 @@ export class NotionClient {
 				block_id: existingStudentIdPage.id,
 				page_size: CONFIG.ROADMAP_TEMPLATE.OVERRIDE_BLOCKS,
 			});
-			console.log(
-				`Student Id Page '${studentId}' exists already (${existingStudentIdPage.id}), removing ${blocksToRemove.results.length} blocks...`,
+			Logging.warning(
+				`${FILE_TAG}${FUNC_TAG} Student Id Page '${studentId}' exists already (${existingStudentIdPage.id}), removing ${blocksToRemove.results.length} blocks...`,
 			);
 			for (const block of blocksToRemove.results) {
 				await this.notion.blocks.delete({ block_id: block.id });
@@ -89,7 +98,7 @@ export class NotionClient {
 
 		const existingStudentCollectionPage = studentCollectionPageRes.results[0];
 		if (!existingStudentCollectionPage) {
-			throw new Error(`No student collections found by name ${studentCollectionName}`);
+			throw new Error(`${FILE_TAG}${FUNC_TAG} No student collections found by name ${studentCollectionName}`);
 		}
 
 		const studentIdPageBody: CreatePageParameters = {
@@ -129,6 +138,7 @@ export class NotionClient {
 	}
 
 	async createStudentRoadmap(studentName: string, pageBody: CreatePageParameters): Promise<string> {
+		const FUNC_TAG = '.[createStudentRoadmap]';
 		const searchResult = await this.searchPage(studentName);
 
 		const existingPage = searchResult.results[0];
@@ -139,7 +149,7 @@ export class NotionClient {
 			// 	block_id: existingPage.id,
 			// 	page_size: CONFIG.ROADMAP_TEMPLATE.OVERRIDE_BLOCKS,
 			// });
-			// console.log(
+			// Logging.warning(
 			// 	`Page '${studentName}' exists already (${existingPage.id}), removing ${blocksToRemove.results.length} blocks...`,
 			// );
 			// for (const block of blocksToRemove.results) {
@@ -147,12 +157,12 @@ export class NotionClient {
 			// }
 
 			// return existingPage.id;
-			console.log(`Page '${studentName}' exists already (${existingPage.id}), archiving it...`);
+			Logging.warning(`${FILE_TAG}${FUNC_TAG} Page '${studentName}' exists already (${existingPage.id}), archiving it...`);
 			const archiveRes = await this.archivePage(existingPage.id);
-			console.log(archiveRes);
+			Logging.warning(`${FILE_TAG}${FUNC_TAG} ${archiveRes.id}`);
 		}
 
-		console.log(`Page '${studentName}'' does not exist yet, creating it...`);
+		Logging.info(`${FILE_TAG}${FUNC_TAG} Page '${studentName}'' does not exist yet, creating it...`);
 
 		const pageCreationResponse = await this.createPage(pageBody);
 		return pageCreationResponse.id;

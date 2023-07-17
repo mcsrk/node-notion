@@ -2,6 +2,7 @@ import Joi, { ObjectSchema } from 'joi';
 import { NextFunction, Request, Response } from 'express';
 
 // Custom modules
+import Logging from '../library/Logging';
 
 import { ISynapStudent } from '../infrastructure/synap/student.interface';
 
@@ -14,8 +15,7 @@ export const ValidateJoi = (schema: ObjectSchema) => {
 
 			next();
 		} catch (error) {
-			console.log(error);
-
+			Logging.error(`[ValidateJoi] ${error}`);
 			return res.status(422).json({ error });
 		}
 	};

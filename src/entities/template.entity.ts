@@ -36,52 +36,34 @@ export class RoadmapTemplate {
 
 	constructor(templatePage: GetPageResponse) {
 		if (!isFullPage(templatePage)) {
-			const errMsg = `${FILE_TAG} templatePage is not a Full Page`;
-			console.log(errMsg);
-			throw new Error(errMsg);
+			throw new Error(`${FILE_TAG} templatePage is not a Full Page`);
 		}
 		if (!templatePage.object || templatePage.object !== 'page') {
-			const errMsg = `${FILE_TAG} templatePage is not a page object`;
-			console.log(errMsg);
-			throw new Error(errMsg);
+			throw new Error(`${FILE_TAG} templatePage is not a page object`);
 		}
 		if (!('parent' in templatePage)) {
-			const errMsg = `${FILE_TAG} templatePage has no parent`;
-			console.log(errMsg);
-			throw new Error(errMsg);
+			throw new Error(`${FILE_TAG} templatePage has no parent`);
 		}
 		if (!('page_id' in templatePage.parent)) {
-			const errMsg = `${FILE_TAG} templatePage has no page as a parent`;
-			console.log(errMsg);
-			throw new Error(errMsg);
+			throw new Error(`${FILE_TAG} templatePage has no page as a parent`);
 		}
 		if (!('cover' in templatePage) || !templatePage.cover) {
-			const errMsg = `${FILE_TAG} templatePage has no cover`;
-			console.log(errMsg);
-			throw new Error(errMsg);
+			throw new Error(`${FILE_TAG} templatePage has no cover`);
 		}
 		if (!('file' in templatePage.cover)) {
-			const errMsg = `${FILE_TAG} templatePage.cover has no file`;
-			console.log(errMsg);
-			throw new Error(errMsg);
+			throw new Error(`${FILE_TAG} templatePage.cover has no file`);
 		}
 		if (!('icon' in templatePage) || !templatePage.icon) {
-			const errMsg = `${FILE_TAG} templatePage has no icon`;
-			console.log(errMsg);
-			throw new Error(errMsg);
+			throw new Error(`${FILE_TAG} templatePage has no icon`);
 		}
 		if (!('emoji' in templatePage.icon)) {
-			const errMsg = `${FILE_TAG} templatePage.icon has no emoji`;
-			console.log(errMsg);
-			throw new Error(errMsg);
+			throw new Error(`${FILE_TAG} templatePage.icon has no emoji`);
 		}
 
 		if (!('properties' in templatePage)) {
-			const errMsg = `${FILE_TAG} templatePage has no properties`;
-			console.log(errMsg);
-			throw new Error(errMsg);
+			throw new Error(`${FILE_TAG} templatePage has no properties`);
 		}
-		// console.log('[URL]', templatePage.cover.file.url);
+		//Logging.warning(`[URL] ${templatePage.cover.file.url}`);
 		this.page.parent = templatePage.parent;
 		this.page.cover = { external: { url: templatePage.cover.file.url }, type: 'external' };
 		this.page.icon = templatePage.icon;
@@ -89,10 +71,10 @@ export class RoadmapTemplate {
 	}
 
 	setBlocksToAppend(pageId: string, templateChildren: ListBlockChildrenResponse): void {
+		const FUNC_TAG = '.[setBlocksToAppend]';
+
 		if (!('results' in templateChildren) || !templateChildren.results) {
-			const errMsg = `${FILE_TAG} templateChildren has no results`;
-			console.log(errMsg);
-			throw new Error(errMsg);
+			throw new Error(`${FILE_TAG} ${FUNC_TAG} templateChildren has no results`);
 		}
 
 		const a: any[] = templateChildren.results.map((retrievedBlock) => {

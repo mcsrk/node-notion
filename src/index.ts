@@ -1,9 +1,13 @@
 import express from 'express';
 
+// Config
 import { CONFIG } from './config/config';
 
-import roadmapRoutes from './routes/roadmap.routes';
+// Custom library
+import Logging from './library/Logging';
 
+// Routes
+import roadmapRoutes from './routes/roadmap.routes';
 const app = express();
 
 app.use(express.urlencoded({ extended: true }));
@@ -32,5 +36,5 @@ app.use('/students', roadmapRoutes);
 const PORT = 8000;
 
 app.listen(PORT, () => {
-	console.log(`Running on PORT http://localhost:${CONFIG.SERVER.PORT}`);
+	Logging.setup(`Running on PORT http://localhost:${CONFIG.SERVER.PORT}`);
 });

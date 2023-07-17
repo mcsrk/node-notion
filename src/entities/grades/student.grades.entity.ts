@@ -1,6 +1,11 @@
 import { IStudentGrades } from './student.grades.interface';
 import { Subject } from '../subject/subject.entity';
+
+// Utils
 import { floatToPerformance } from '../../utils/utils';
+
+// Custom library
+import Logging from '../../library/Logging';
 
 const TAG = '[StudentGrades]';
 
@@ -13,20 +18,20 @@ export class StudentGrades implements IStudentGrades {
 
 	constructor(_grades: any) {
 		if (!('overall' in _grades) || isNaN(_grades.overall)) {
-			console.log(`${TAG} overall is not a valid number: ${_grades.overall}. overall_perf will be set to 0.`);
+			Logging.warning(`${TAG} overall is not a valid number: ${_grades.overall}. overall_perf will be set to 0.`);
 			this.overall_perf = 0;
 		} else {
 			this.overall_perf = _grades.overall;
 		}
 
 		if (!('name' in _grades) || _grades.name === '') {
-			console.log(`${TAG} grades has no valid name name: ${_grades.name}. Name will be set to "No Course".`);
+			Logging.warning(`${TAG} grades has no valid name name: ${_grades.name}. Name will be set to "No Course".`);
 			this.name = 'No Course or Grade';
 		} else {
 			this.name = _grades.name;
 		}
 		if (!('subjects' in _grades) || _grades.subjects.length === 0) {
-			console.log(`${TAG} grades has no subjects: ${_grades.subjects}. subjects will be left as [].`);
+			Logging.warning(`${TAG} grades has no subjects: ${_grades.subjects}. subjects will be left as [].`);
 			this.subjects = [];
 		} else {
 			const subjectsInstances = _grades.subjects.map((_subject: any) => new Subject(_subject));

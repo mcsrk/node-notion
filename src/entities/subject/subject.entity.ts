@@ -12,7 +12,7 @@ import { ISubject } from './subject.interface';
 // Constants
 import { findSubjectNotionPrefixByName } from '../../constants/subjects';
 
-const TAG = '[Subject]';
+const FILE_TAG = '[Subject]';
 
 export class Subject implements ISubject {
 	name: string;
@@ -26,26 +26,26 @@ export class Subject implements ISubject {
 
 	constructor(_subject: any) {
 		if (!('name' in _subject) || _subject.name === '') {
-			throw new Error(`${TAG} subject has no name: ${_subject.name}`);
+			throw new Error(`${FILE_TAG} subject has no name: ${_subject.name}`);
 		} else {
 			this.name = _subject.name;
 		}
 
 		if (!('performance' in _subject) || isNaN(_subject.performance) || isNaN(Number(_subject.performance))) {
-			throw new Error(`${TAG} subject has no valid performance: ${_subject.performance}`);
+			throw new Error(`${FILE_TAG} subject has no valid performance: ${_subject.performance}`);
 		} else {
 			this.performance = _subject.performance;
 		}
 
 		if (!('topicsOfDifficulty' in _subject)) {
-			throw new Error(`${TAG} subject has no topicsOfDifficulty: ${_subject.topicsOfDifficulty}`);
+			throw new Error(`${FILE_TAG} subject has no topicsOfDifficulty: ${_subject.topicsOfDifficulty}`);
 		} else {
 			const tds: TopicOrSkill[] = _subject.topicsOfDifficulty.map((td: any) => new TopicOrSkill(td));
 			this.topicsOfDifficulty = tds;
 		}
 
 		if (!('skillsOfDifficulty' in _subject)) {
-			throw new Error(`${TAG} subject has no skillsOfDifficulty: ${_subject.skillsOfDifficulty}`);
+			throw new Error(`${FILE_TAG} subject has no skillsOfDifficulty: ${_subject.skillsOfDifficulty}`);
 		} else {
 			const tss: TopicOrSkill[] = _subject.skillsOfDifficulty.map((ts: any) => new TopicOrSkill(ts));
 			this.skillsOfDifficulty = tss;
@@ -57,11 +57,12 @@ export class Subject implements ISubject {
 	}
 
 	exportGradesForNotion(): { [key: string]: string } {
+		const FUNC_TAG = '.[exportGradesForNotion]';
 		let exportSubject: { [key: string]: string } = {};
 		const subjectNotionPrefix = findSubjectNotionPrefixByName(this.name);
 
 		if (!subjectNotionPrefix) {
-			throw new Error(`${TAG} no notion prefix found for subject name: ${this.name}`);
+			throw new Error(`${FILE_TAG}${FUNC_TAG} no notion prefix found for subject name: ${this.name}`);
 		}
 
 		exportSubject[`${subjectNotionPrefix}_perf`] = floatToPerformance(this.performance);

@@ -10,6 +10,7 @@ import { SynapStudent } from '../infrastructure/synap/student.entity';
 
 // Mocke data
 import { DEMO_STUDENT_DATA } from '../mocks/student';
+import Logging from '../library/Logging';
 
 const FILE_TAG = '[Notion controller]';
 
@@ -17,7 +18,7 @@ const getStudentRoadmap = async (req: Request, res: Response) => {};
 
 const createRoadmap = async (req: Request, res: Response) => {
 	const FUNC_TAG = '.[createRoadMap]';
-	console.info(FILE_TAG + FUNC_TAG, 'Function started!');
+	Logging.info(`${FILE_TAG} ${FUNC_TAG} Function started!`);
 	try {
 		const { studentId } = req.params;
 		const notionClient = new NotionClient();
@@ -31,8 +32,6 @@ const createRoadmap = async (req: Request, res: Response) => {
 		if (!template || typeof template !== 'string') {
 			return res.status(404).json({ message: `Query field template must be a string` });
 		}
-
-		console.info(FILE_TAG + FUNC_TAG, 'query: ', template);
 
 		const studentId_PageId = await notionClient.createStudentIdPage(studentId);
 
@@ -74,10 +73,16 @@ const createRoadmap = async (req: Request, res: Response) => {
 			studentPageId: studentId_PageId,
 			stringifiedBlocks,
 		};
-		// console.log(FILE_TAG + FUNC_TAG, 'Returning:', returns);
+		Logging.info(`${FILE_TAG}${FUNC_TAG} Returning`);
 		return res.status(200).json(returns);
 	} catch (error) {
-		return res.status(500).json({ message: error });
+		Logging.error((error as Error).message);
+		Logging.error(error);
+
+		res.status(500).json({
+			message: `Error creating student roadmap`,
+			error: (error as Error).message,
+		});
 	}
 };
 const publishRoadmap = async (req: Request, res: Response) => {};

@@ -1,3 +1,5 @@
+// Custom library
+import Logging from '../../library/Logging';
 import { ITopicsOrSkills } from './topic.interface';
 
 const TAG = '[TopicOrSkill]';
@@ -9,7 +11,7 @@ export class TopicOrSkill implements ITopicsOrSkills {
 	constructor(topicOrSkillData: any) {
 		/** Validation: is name valid? otherwise let it as N/A*/
 		if (!('name' in topicOrSkillData) || topicOrSkillData.name === '') {
-			console.log(`${TAG} name has a invalid value: ${topicOrSkillData.name}, it'll be ignored and set to N/A.`);
+			Logging.warning(`${TAG} name has a invalid value: ${topicOrSkillData.name}, it'll be ignored and set to N/A.`);
 			this.name = 'N/A';
 		} else {
 			this.name = topicOrSkillData.name;
@@ -22,7 +24,7 @@ export class TopicOrSkill implements ITopicsOrSkills {
 			isNaN(topicOrSkillData.performance) ||
 			isNaN(Number(topicOrSkillData.performance))
 		) {
-			console.log(`${TAG} performance : ${topicOrSkillData.performance}, it'll be ignored and set to 0.`);
+			Logging.warning(`${TAG} performance : ${topicOrSkillData.performance}, it'll be ignored and set to 0.`);
 			this.performance = 0;
 		} else {
 			this.performance = topicOrSkillData.performance;
