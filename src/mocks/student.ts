@@ -41,7 +41,7 @@ export const DEMO_STUDENT_DATA = Object.freeze({
 			},
 			{
 				name: SUBJECTS.THINKING.NAME,
-				performance: 0.3,
+				performance: 0.5,
 				topicsOfDifficulty: [
 					{ name: 'Dialogue Flaws - Replaced from server', performance: 0.31 },
 					{ name: 'Strengthen & Weaken - Replaced from server', performance: 0.32 },
