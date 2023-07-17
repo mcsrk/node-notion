@@ -1,3 +1,4 @@
+import { IFeedbackRange } from '../feedback/feedback.interface';
 import { ITopicsOrSkills } from '../topic/topic.interface';
 
 export interface ISubject {
@@ -5,4 +6,5 @@ export interface ISubject {
 	performance: number;
 	topicsOfDifficulty: ITopicsOrSkills[];
 	skillsOfDifficulty: ITopicsOrSkills[];
+	feedback: IFeedbackRange;
 }

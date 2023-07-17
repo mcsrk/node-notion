@@ -1,7 +1,16 @@
-import { findSubjectNotionPrefixByName } from '../../constants/subjects';
+// Repositories
+import { getFeedbackBySubjectAndPerformance } from '../../repositories/feedback.repository';
+
+// Utils
 import { floatToPerformance } from '../../utils/utils';
+
+// Entities
+import { FeedbackRange } from '../feedback/feedback.entity';
 import { TopicOrSkill } from '../topic/topic.entity';
 import { ISubject } from './subject.interface';
+
+// Constants
+import { findSubjectNotionPrefixByName } from '../../constants/subjects';
 
 const TAG = '[Subject]';
 
@@ -11,6 +20,9 @@ export class Subject implements ISubject {
 
 	topicsOfDifficulty: TopicOrSkill[] = [];
 	skillsOfDifficulty: TopicOrSkill[] = [];
+
+	/** Subject feedback based on the performance */
+	feedback: FeedbackRange;
 
 	constructor(_subject: any) {
 		if (!('name' in _subject) || _subject.name === '') {
@@ -38,10 +50,14 @@ export class Subject implements ISubject {
 			const tss: TopicOrSkill[] = _subject.skillsOfDifficulty.map((ts: any) => new TopicOrSkill(ts));
 			this.skillsOfDifficulty = tss;
 		}
+
+		/** Get subject's feedback based on performance */
+		const studentFeedback = getFeedbackBySubjectAndPerformance(_subject.name, _subject.performance);
+		this.feedback = studentFeedback;
 	}
 
 	exportGradesForNotion(): { [key: string]: string } {
-		const exportSubject: { [key: string]: string } = {};
+		let exportSubject: { [key: string]: string } = {};
 		const subjectNotionPrefix = findSubjectNotionPrefixByName(this.name);
 
 		if (!subjectNotionPrefix) {
@@ -61,6 +77,12 @@ export class Subject implements ISubject {
 			exportSubject[`${subjectNotionPrefix}_sd_${numeration}`] = skill.name;
 			exportSubject[`${subjectNotionPrefix}_sd_perf_${numeration}`] = floatToPerformance(skill.performance);
 		});
+
+		// Get the feedback exported data
+		const feedbackData = this.feedback.exportFeedbackForNotion(this.name);
+
+		// Merge the feedbackData into the exportSubject
+		exportSubject = { ...exportSubject, ...feedbackData };
 
 		return exportSubject;
 	}
