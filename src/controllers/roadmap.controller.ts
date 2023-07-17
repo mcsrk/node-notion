@@ -1,8 +1,12 @@
 import { Request, Response } from 'express';
-import { NotionClient } from '../infrastructure/notion';
+
+// Infrastructure
+import { NotionClient } from '../infrastructure/notion/notion';
+
+// Entites
 import { RoadmapTemplate } from '../entities/template.entity';
-import { ISynapStudent } from '../infrastructure/synap/student.interface';
 import { StudentGrades } from '../entities/grades/student.grades.entity';
+import { SynapStudent } from '../infrastructure/synap/student.entity';
 
 // Mocke data
 import { DEMO_STUDENT_DATA } from '../mocks/student';
@@ -14,23 +18,22 @@ const getStudentRoadmap = async (req: Request, res: Response) => {};
 const createRoadmap = async (req: Request, res: Response) => {
 	const FUNC_TAG = '.[createRoadMap]';
 	console.info(FILE_TAG + FUNC_TAG, 'Function started!');
-
-	const { studentId } = req.params;
-	const studentData: ISynapStudent = req.body;
-	const studentName = studentData.user.name;
-	const studentGradeData = DEMO_STUDENT_DATA.grade;
-
-	const notionClient = new NotionClient();
-
-	const { template } = req.query;
-
-	if (!template || typeof template !== 'string') {
-		return res.status(404).json({ message: `Query field template must be a string` });
-	}
-
-	console.info(FILE_TAG + FUNC_TAG, 'query: ', template);
-
 	try {
+		const { studentId } = req.params;
+		const notionClient = new NotionClient();
+		const synapStudent = new SynapStudent(req.body);
+		const studentGradeData = DEMO_STUDENT_DATA.grade;
+
+		const studentName = synapStudent.getName();
+
+		const { template } = req.query;
+
+		if (!template || typeof template !== 'string') {
+			return res.status(404).json({ message: `Query field template must be a string` });
+		}
+
+		console.info(FILE_TAG + FUNC_TAG, 'query: ', template);
+
 		const studentId_PageId = await notionClient.createStudentIdPage(studentId);
 
 		const searchTemplate = await notionClient.searchPage(template);
@@ -58,9 +61,11 @@ const createRoadmap = async (req: Request, res: Response) => {
 
 		/** Convert student scores from server nested data structure to plain object*/
 		const exportedStudentScores = studentGrade.exportStudentGradeForNotion();
+		const exportedSynapStudent = synapStudent.exportSynapStudentForNotion();
+		const valuesToReplace: { [key: string]: string } = { ...exportedSynapStudent, ...exportedStudentScores };
 
 		/** Replace blocks variables with student scores values and subjects comments */
-		const stringifiedBlocks = templateInstance.replaceTemplateValues(exportedStudentScores);
+		const stringifiedBlocks = templateInstance.replaceTemplateValues(valuesToReplace);
 		await notionClient.appendChildren(templateInstance.blocksToAppend);
 
 		let returns = {
