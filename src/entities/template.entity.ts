@@ -81,7 +81,7 @@ export class RoadmapTemplate {
 			console.log(errMsg);
 			throw new Error(errMsg);
 		}
-		console.log('[URL]', templatePage.cover.file.url);
+		// console.log('[URL]', templatePage.cover.file.url);
 		this.page.parent = templatePage.parent;
 		this.page.cover = { external: { url: templatePage.cover.file.url }, type: 'external' };
 		this.page.icon = templatePage.icon;
@@ -143,13 +143,15 @@ export class RoadmapTemplate {
 	}
 
 	replaceTemplateValues(exportedStudentGradeForNotion: { [key: string]: string }): string {
+		/** Expected fields structure to replace in template */
 		const replacements: { [key: string]: any } = {
+			//TODO: include the student name
 			student_name: 'Jhoncito',
-
+			/**Student info */
 			grade_name: 'Primary 4th Grade',
 			overall_perf: 8,
 
-			/** Math */
+			/** Subject Performance with Skills and Topics of difficulty */
 			math_perf: '27%',
 
 			math_td_1: 'MathTD 1',
@@ -166,39 +168,12 @@ export class RoadmapTemplate {
 			math_sd_3: 'Math Skill D 3',
 			math_sd_perf_3: 'math sd 3 xx %',
 
-			/** Reading */
-			reading_perf: '25%',
-
-			reading_td_1: '',
-			reading_td_perf_1: '',
-			reading_td_2: '',
-			reading_td_perf_2: '',
-			reading_td_3: '',
-			reading_td_perf_3: '',
-
-			reading_sd_1: '',
-			reading_sd_perf_1: '',
-			reading_sd_2: '',
-			reading_sd_perf_2: '',
-			reading_sd_3: '',
-			reading_sd_perf_3: '',
-
-			/** Thinking */
-			thinking_perf: '23%',
-
-			thinking_td_1: '',
-			thinking_td_perf_1: '',
-			thinking_td_2: '',
-			thinking_td_perf_2: '',
-			thinking_td_3: '',
-			thinking_td_perf_3: '',
-
-			thinking_sd_1: '',
-			thinking_sd_perf_1: '',
-			thinking_sd_2: '',
-			thinking_sd_perf_2: '',
-			thinking_sd_3: '',
-			thinking_sd_perf_3: '',
+			/** Fecdback */
+			math_special_comments: 'math special comments from dummy code',
+			math_imprv_strategies_1: 'math improve strategies 1 from dummy code',
+			math_imprv_strategies_2: 'math improve strategies 2 from dummy code',
+			math_imprv_strategies_3: 'math improve strategies 3 from dummy code',
+			math_imprv_strategies_4: 'math improve strategies 4 from dummy code',
 		};
 
 		const jsonStringifiedChildren = JSON.stringify(this.blocksToAppend);
