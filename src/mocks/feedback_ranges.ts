@@ -5,7 +5,7 @@ export const createGenericSubjectFeedbackRanges = (subjectName: string): IFeedba
 	const subjectCaps = subjectName.toUpperCase();
 	return [
 		{
-			range: { min: 0, max: 20 },
+			range: { min: 0, max: 0.19 },
 			feedback: {
 				special_comment: `Good effort in ${subjectCaps}!`,
 				strategies: [
@@ -15,7 +15,7 @@ export const createGenericSubjectFeedbackRanges = (subjectName: string): IFeedba
 			},
 		},
 		{
-			range: { min: 20, max: 40 },
+			range: { min: 0.2, max: 0.39 },
 			feedback: {
 				special_comment: `Making progress in ${subjectCaps}!`,
 				strategies: [
@@ -25,7 +25,7 @@ export const createGenericSubjectFeedbackRanges = (subjectName: string): IFeedba
 			},
 		},
 		{
-			range: { min: 40, max: 60 },
+			range: { min: 0.4, max: 0.59 },
 			feedback: {
 				special_comment: `Doing well in ${subjectCaps}!`,
 				strategies: [
@@ -35,7 +35,7 @@ export const createGenericSubjectFeedbackRanges = (subjectName: string): IFeedba
 			},
 		},
 		{
-			range: { min: 60, max: 80 },
+			range: { min: 0.6, max: 0.79 },
 			feedback: {
 				special_comment: `Great job in ${subjectCaps}!`,
 				strategies: [
@@ -45,7 +45,7 @@ export const createGenericSubjectFeedbackRanges = (subjectName: string): IFeedba
 			},
 		},
 		{
-			range: { min: 80, max: 100 },
+			range: { min: 0.8, max: 1 },
 			feedback: {
 				special_comment: `Excellent performance in ${subjectCaps}!`,
 				strategies: [
