@@ -12,7 +12,7 @@ export const DEMO_STUDENT_DATA = Object.freeze({
 		overall: 0.84,
 		subjects: [
 			{
-				name: SUBJECTS.MATH.NAME,
+				name: SUBJECTS.READING.NAME,
 				performance: 0.1,
 				topicsOfDifficulty: [
 					{ name: 'Poetry - Replaced from server', performance: 0.11 },
@@ -26,7 +26,7 @@ export const DEMO_STUDENT_DATA = Object.freeze({
 				],
 			},
 			{
-				name: SUBJECTS.READING.NAME,
+				name: SUBJECTS.MATH.NAME,
 				performance: 0.2,
 				topicsOfDifficulty: [
 					{ name: 'Algebra  - Replaced from server', performance: 0.21 },
