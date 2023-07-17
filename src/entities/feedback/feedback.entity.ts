@@ -1,3 +1,7 @@
+// Constants
+import { DEFAULT_FEEDBACK_MSG } from '../../constants/feedback';
+import { findSubjectNotionPrefixByName } from '../../constants/subjects';
+
 import { IFeedbackRange } from './feedback.interface';
 
 const TAG = '[FeedbackRange]';
@@ -10,8 +14,8 @@ export class FeedbackRange implements IFeedbackRange {
 	private defaults = {
 		range: { min: 0, max: 100 },
 		feedback: {
-			special_comment: 'No special comments defined yet',
-			strategies: new Array(4).fill({ message: 'No strategies defined yet' }),
+			special_comment: DEFAULT_FEEDBACK_MSG.SPECIAL_COMMENT,
+			strategies: new Array(4).fill({ message: DEFAULT_FEEDBACK_MSG.IMPROVEMENT_STRATEGY }),
 		},
 	};
 
@@ -28,7 +32,9 @@ export class FeedbackRange implements IFeedbackRange {
 			}
 			this.range = { min, max };
 		} else {
-			console.log(`${TAG} feedback range is missing or invalid, it'll be set to default range : 0 to 100.`);
+			console.log(
+				`${TAG} feedback range is missing or invalid :${feedbackRangeData.range}, it'll be set to default range : 0 to 100.`,
+			);
 			this.range = this.defaults.range; // Use default range
 		}
 
@@ -57,8 +63,29 @@ export class FeedbackRange implements IFeedbackRange {
 			}
 		} else {
 			// Use default feedback if feedback is missing or invalid
-			console.log(`${TAG} feedback data is missing or invalid, it'll be set to default feedback.`);
+			console.log(
+				`${TAG} feedback messages is missing or invalid :${feedbackRangeData.feedback}, messages will be set to default.`,
+			);
 			this.feedback = this.defaults.feedback;
 		}
+	}
+
+	exportFeedbackForNotion(subjectName: string): { [key: string]: string } {
+		const FUNC_TAG = '.[exportFeedbackForNotion]';
+		const exportSubject: { [key: string]: string } = {};
+		const subjectNotionPrefix = findSubjectNotionPrefixByName(subjectName);
+
+		if (!subjectNotionPrefix) {
+			throw new Error(`${TAG} ${FUNC_TAG} No notion prefix found for subject name: ${subjectName}`);
+		}
+
+		exportSubject[`${subjectNotionPrefix}_special_comments`] = this.feedback.special_comment;
+
+		this.feedback.strategies.forEach((strategy, index) => {
+			const numeration = index + 1;
+			exportSubject[`${subjectNotionPrefix}_imprv_strategies_${numeration}`] = strategy.message;
+		});
+
+		return exportSubject;
 	}
 }
