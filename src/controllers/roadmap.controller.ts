@@ -53,9 +53,14 @@ const createRoadmap = async (req: Request, res: Response) => {
 		/** Duplicate and create blocks */
 		templateInstance.setBlocksToAppend(studentRoadmapPageId, templatePageChildren);
 
-		/** Replace blocks variables with student values */
+		/** Adapt student data and feedback data to this server valid structure */
 		const studentGrade = new StudentGrades(studentGradeData);
-		const stringifiedBlocks = templateInstance.replaceTemplateValues(studentGrade.exportStudentGradeForNotion());
+
+		/** Convert student scores from server nested data structure to plain object*/
+		const exportedStudentScores = studentGrade.exportStudentGradeForNotion();
+
+		/** Replace blocks variables with student scores values and subjects comments */
+		const stringifiedBlocks = templateInstance.replaceTemplateValues(exportedStudentScores);
 		await notionClient.appendChildren(templateInstance.blocksToAppend);
 
 		let returns = {
