@@ -12,7 +12,7 @@ import {
 	UpdatePageResponse,
 } from '@notionhq/client/build/src/api-endpoints';
 
-import { CONFIG } from '../config/config';
+import { CONFIG } from '../../config/config';
 
 export class NotionClient {
 	notion: Client;
