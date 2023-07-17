@@ -1,5 +1,6 @@
 import { SUBJECTS } from '../constants/subjects';
 
+/** This student data should be recieved through the req.body of the POST request */
 export const DEMO_STUDENT_DATA = Object.freeze({
 	user: {
 		name: 'Andres Carne de Res',
