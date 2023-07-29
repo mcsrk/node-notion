@@ -1,16 +1,18 @@
 import { Request, Response } from 'express';
 
 // Infrastructure
-import { NotionClient } from '../infrastructure/notion/notion';
+import NotionInstance from '../infrastructure/notion';
 
 // Entites
 import { RoadmapTemplate } from '../entities/template.entity';
 import { StudentGrades } from '../entities/grades/student.grades.entity';
 import { SynapStudent } from '../infrastructure/synap/student.entity';
+import { Subject } from '../entities/subject/subject.entity';
 
+// Custom Libraries
+import Logging from '../library/Logging';
 // Mocke data
 import { DEMO_STUDENT_DATA } from '../mocks/student';
-import Logging from '../library/Logging';
 
 const FILE_TAG = '[Notion controller]';
 
@@ -18,10 +20,9 @@ const getStudentRoadmap = async (req: Request, res: Response) => {};
 
 const createRoadmap = async (req: Request, res: Response) => {
 	const FUNC_TAG = '.[createRoadMap]';
-	Logging.info(`${FILE_TAG} ${FUNC_TAG} Function started!`);
+	Logging.info(`${FILE_TAG}${FUNC_TAG} Function started!`);
 	try {
 		const { studentId } = req.params;
-		const notionClient = new NotionClient();
 		const synapStudent = new SynapStudent(req.body);
 		const studentGradeData = DEMO_STUDENT_DATA.grade;
 
@@ -33,30 +34,39 @@ const createRoadmap = async (req: Request, res: Response) => {
 			return res.status(404).json({ message: `Query field template must be a string` });
 		}
 
-		const studentId_PageId = await notionClient.createStudentIdPage(studentId);
+		const studentId_PageId = await NotionInstance.createStudentIdPage(studentId);
 
-		const searchTemplate = await notionClient.searchPage(template);
+		const searchTemplate = await NotionInstance.searchPage(template);
 
 		if (searchTemplate.results.length === 0) {
 			return res.status(404).json({ message: `Template page: '${template}' not found in Notion workspace` });
 		}
 
 		const tempalteId = searchTemplate.results[0].id;
-		const templatePage = await notionClient.getPage(tempalteId);
-		const templatePageChildren = await notionClient.getPageBlockChildren(tempalteId);
+		const templatePage = await NotionInstance.getPage(tempalteId);
+		const templatePageChildren = await NotionInstance.getPageBlockChildren(tempalteId);
 
 		const templateInstance = new RoadmapTemplate(templatePage);
 
 		templateInstance.changePageTitle(studentName);
 		templateInstance.changePageParent(studentId_PageId);
 
-		const studentRoadmapPageId = await notionClient.createStudentRoadmap(studentName, templateInstance.page);
+		const studentRoadmapPageId = await NotionInstance.createStudentRoadmap(studentName, templateInstance.page);
 
 		/** Duplicate and create blocks */
 		templateInstance.setBlocksToAppend(studentRoadmapPageId, templatePageChildren);
 
 		/** Adapt student data and feedback data to this server valid structure */
-		const studentGrade = new StudentGrades(studentGradeData);
+		const subjects = studentGradeData.subjects.map(async (_subjectData: any) => {
+			/** Create Subject instance and retrieves feedback from source*/
+			const subject = new Subject(_subjectData);
+			await subject.setSubjectFeedback();
+			await subject.setSubtopicsFeedback();
+			return subject;
+		});
+
+		const subjectsInstances = await Promise.all(subjects);
+		const studentGrade = new StudentGrades(studentGradeData, subjectsInstances);
 
 		/** Convert student scores from server nested data structure to plain object*/
 		const exportedStudentScores = studentGrade.exportStudentGradeForNotion();
@@ -65,7 +75,7 @@ const createRoadmap = async (req: Request, res: Response) => {
 
 		/** Replace blocks variables with student scores values and subjects comments */
 		const stringifiedBlocks = templateInstance.replaceTemplateValues(valuesToReplace);
-		await notionClient.appendChildren(templateInstance.blocksToAppend);
+		await NotionInstance.appendChildren(templateInstance.blocksToAppend);
 
 		let returns = {
 			templatePage,
