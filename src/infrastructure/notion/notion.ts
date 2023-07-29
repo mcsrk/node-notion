@@ -162,7 +162,7 @@ export class NotionClient {
 			Logging.warning(`${FILE_TAG}${FUNC_TAG} ${archiveRes.id}`);
 		}
 
-		Logging.info(`${FILE_TAG}${FUNC_TAG} Page '${studentName}'' does not exist yet, creating it...`);
+		Logging.info(`${FILE_TAG}${FUNC_TAG} Page '${studentName}' does not exist yet, creating it...`);
 
 		const pageCreationResponse = await this.createPage(pageBody);
 		return pageCreationResponse.id;

@@ -74,7 +74,7 @@ export class RoadmapTemplate {
 		const FUNC_TAG = '.[setBlocksToAppend]';
 
 		if (!('results' in templateChildren) || !templateChildren.results) {
-			throw new Error(`${FILE_TAG} ${FUNC_TAG} templateChildren has no results`);
+			throw new Error(`${FILE_TAG}${FUNC_TAG} templateChildren has no results`);
 		}
 
 		const a: any[] = templateChildren.results.map((retrievedBlock) => {
