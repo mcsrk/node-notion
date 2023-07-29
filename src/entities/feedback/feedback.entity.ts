@@ -9,42 +9,43 @@ import { IFeedbackRange } from './feedback.interface';
 const FILE_TAG = '[FeedbackRange]';
 
 export class FeedbackRange implements IFeedbackRange {
-	range: { min: number; max: number };
+	min: number;
+	max: number;
 	message: string;
 
 	// Default values object
 	private defaults = {
-		range: { min: 0, max: 100 },
+		min: 0,
+		max: 100,
 		message: DEFAULT_FEEDBACK_MSG.IMPROVEMENT_STRATEGY,
 	};
 
-	constructor(feedbackRangeData: any) {
+	constructor(feedbackData: any) {
 		/** Validate and set the range
 		 *  (checks all the possible options so it will be able to accept
 		 *  user input data from sources like notion in the future)*/
-		if ('range' in feedbackRangeData && feedbackRangeData.range) {
-			let { min, max } = feedbackRangeData.range;
-			min = Math.max(0, min);
-			max = Math.min(100, max);
+		if ('min' in feedbackData && 'max' in feedbackData) {
+			let min = Math.max(0, feedbackData.min);
+			let max = Math.min(100, feedbackData.max);
 			if (min > max) {
 				[min, max] = [max, min];
 			}
-			this.range = { min, max };
+			this.min = min;
+			this.max = max;
 		} else {
-			Logging.warning(
-				`${FILE_TAG} feedback range is missing or invalid :${feedbackRangeData.range}, it'll be set to default range : 0 to 100.`,
-			);
-			this.range = this.defaults.range; // Use default range
+			Logging.warning(`${FILE_TAG} feedback range is missing or invalid. It'll be set to the default range: 0 to 100.`);
+			this.min = this.defaults.min; // Use default min
+			this.max = this.defaults.max; // Use default max
 		}
 
 		// Validate feddback message
-		if ('message' in feedbackRangeData && feedbackRangeData.message) {
+		if ('message' in feedbackData && feedbackData.message) {
 			// If special_comment is missing, use the default value
-			this.message = feedbackRangeData.message;
+			this.message = feedbackData.message;
 		} else {
 			// Use default feedback if feedback is missing or invalid
 			Logging.warning(
-				`${FILE_TAG} feedback message is missing or invalid :${feedbackRangeData.feedback}, message will be set to default.`,
+				`${FILE_TAG} feedback message is missing or invalid :${feedbackData.feedback}, message will be set to default.`,
 			);
 			this.message = this.defaults.message;
 		}

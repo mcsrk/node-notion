@@ -5,23 +5,28 @@ export const mockSpecialCommentsSubjectFeedback = (subjectName: string): IFeedba
 	const subjectCaps = subjectName.toUpperCase();
 	return [
 		{
-			range: { min: 0, max: 0.19 },
+			min: 0,
+			max: 0.19,
 			message: `Good effort in ${subjectCaps}!`,
 		},
 		{
-			range: { min: 0.2, max: 0.39 },
+			min: 0.2,
+			max: 0.39,
 			message: `Making progress in ${subjectCaps}!`,
 		},
 		{
-			range: { min: 0.4, max: 0.59 },
+			min: 0.4,
+			max: 0.59,
 			message: `Doing well in ${subjectCaps}!`,
 		},
 		{
-			range: { min: 0.6, max: 0.79 },
+			min: 0.6,
+			max: 0.79,
 			message: `Great job in ${subjectCaps}!`,
 		},
 		{
-			range: { min: 0.8, max: 1 },
+			min: 0.8,
+			max: 1,
 			message: `Excellent performance in ${subjectCaps}!`,
 		},
 	];
@@ -32,27 +37,32 @@ export const mockSkillOrTopicStrategies = (skillOrTopicName: string): IFeedbackR
 	const skillOrTopic = skillOrTopicName.toUpperCase();
 	return [
 		{
-			range: { min: 0, max: 0.19 },
+			min: 0,
+			max: 0.19,
 			message: `🔴Try practicing more ${skillOrTopic} exercises.`,
 			//message: `Review the basic ${subjectCaps} concepts.`,
 		},
 		{
-			range: { min: 0.2, max: 0.39 },
+			min: 0.2,
+			max: 0.39,
 			message: `🟠Focus on ${skillOrTopic} problem-solving techniques.`,
 			//message: `Seek additional ${subjectCaps} help if needed.`
 		},
 		{
-			range: { min: 0.4, max: 0.59 },
+			min: 0.4,
+			max: 0.59,
 			message: `🟡Continue practicing ${skillOrTopic} regularly.`,
 			//message: `Explore advanced ${subjectCaps} topics.`
 		},
 		{
-			range: { min: 0.6, max: 0.79 },
+			min: 0.6,
+			max: 0.79,
 			message: `🔵Work on challenging ${skillOrTopic} problems.`,
 			//message: `Participate in ${subjectCaps} discussions.`
 		},
 		{
-			range: { min: 0.8, max: 1 },
+			min: 0.8,
+			max: 1,
 			message: `🟢Share ${skillOrTopic} knowledge with peers.`,
 			//message: `Take up more complex ${subjectCaps} tasks.`
 		},
