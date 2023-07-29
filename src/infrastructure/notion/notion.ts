@@ -8,6 +8,8 @@ import {
 	GetDatabaseResponse,
 	GetPageResponse,
 	ListBlockChildrenResponse,
+	QueryDatabaseParameters,
+	QueryDatabaseResponse,
 	SearchResponse,
 	UpdatePageResponse,
 } from '@notionhq/client/build/src/api-endpoints';
@@ -35,7 +37,7 @@ export class NotionClient {
 
 	async searchPage(searchTerm?: string): Promise<SearchResponse> {
 		const FUNC_TAG = '.[searchPage]';
-		Logging.info(`${FILE_TAG}${FUNC_TAG} Searchin page: ${searchTerm}`);
+		Logging.info(`${FILE_TAG}${FUNC_TAG} Searching page: ${searchTerm}`);
 		const result = await this.notion.search({
 			query: searchTerm,
 			filter: {
@@ -44,6 +46,24 @@ export class NotionClient {
 			},
 		});
 		return result;
+	}
+
+	async searchDatabase(searchTerm?: string): Promise<SearchResponse> {
+		const FUNC_TAG = '.[searchDatabase]';
+		Logging.info(`${FILE_TAG}${FUNC_TAG} Searching database: ${searchTerm}`);
+		const result = await this.notion.search({
+			query: searchTerm,
+			filter: {
+				property: 'object',
+				value: 'database',
+			},
+		});
+		return result;
+	}
+
+	async queryDatabase(queryParams: QueryDatabaseParameters): Promise<QueryDatabaseResponse> {
+		const response = await this.notion.databases.query(queryParams);
+		return response;
 	}
 
 	async getPage(pageId: string): Promise<GetPageResponse> {
@@ -61,8 +81,8 @@ export class NotionClient {
 		return result;
 	}
 
-	async getDatabase(pageId: string): Promise<GetDatabaseResponse> {
-		const pageResult = await this.notion.databases.retrieve({ database_id: pageId });
+	async getDatabase(databaseId: string): Promise<GetDatabaseResponse> {
+		const pageResult = await this.notion.databases.retrieve({ database_id: databaseId });
 		const result = pageResult;
 		return result;
 	}
