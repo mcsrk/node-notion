@@ -1,50 +1,96 @@
 import { FeedbackRange } from '../entities/feedback/feedback.entity';
+import NotionInstance from '../infrastructure/notion';
 
 // Custom library
 import Logging from '../library/Logging';
 
 // Mock up
-import { mockSkillOrTopicStrategies, mockSpecialCommentsSubjectFeedback } from '../mocks/feedback_ranges';
+import { mockSkillOrTopicStrategies } from '../mocks/feedback_ranges';
 
 const FILE_TAG = '[FeedbackRepo]';
 
-/** TODO: This async function would fetch feedback messages from an external
- *  data source, like notion database o general porpuse database */
+const adaptNotionEntry = (notionEntry: any): { [key: string]: number | string | null } => {
+	let adaptedEntry: { [key: string]: number | string | null } = { min: null, max: null, message: null };
 
-// const getExternalFeedbackBySubject = await (subjectName: string):Promise<IFeedbackRange[]> => {};
+	if (notionEntry.min.number) {
+		adaptedEntry['min'] = notionEntry.min.number;
+	}
+	if (notionEntry.max.number) {
+		adaptedEntry['max'] = notionEntry.max.number;
+	}
+	if (notionEntry.message.rich_text[0].plain_text) {
+		adaptedEntry['message'] = notionEntry.message.rich_text[0].plain_text;
+	}
+	return adaptedEntry;
+};
 
-const getFeedbackBySubjectAndPerformance = (subjectName: string, subjectPerf: number): FeedbackRange => {
+const getExternalFeedbackByPerformance = async (
+	topicName: string,
+	topicPerformance: number,
+): Promise<FeedbackRange> => {
 	const FUNC_TAG = '.[getFeedbackBySubject]';
-	const DATA_SOURCE = 'MOCK UP DATA';
+	const DATA_SOURCE = 'NOTION-DB';
 	try {
-		Logging.info(`${FILE_TAG}${FUNC_TAG} Function started! -----------------`);
-		Logging.info(`${FILE_TAG}${FUNC_TAG} Retrieving feedback for: ${subjectName}`);
-
+		const feedbackDBName = 'Feedback';
 		/** Get all feedback ranges from source*/
-		const mockedUpFeedback = mockSpecialCommentsSubjectFeedback(subjectName);
+		const feedbackDatabaseMeta = await NotionInstance.searchDatabase(feedbackDBName);
+		if (!feedbackDatabaseMeta.results[0]) {
+			throw new Error(`No database found by searchTerm: ${feedbackDBName}`);
+		}
+		const feedbackDatabaseID = feedbackDatabaseMeta.results[0].id;
+		// TODO: Make this query useful after converting the repository into a class or removed it
+		const feedbackDatabase = await NotionInstance.getDatabase(feedbackDatabaseID);
+		const feedbackResults = await NotionInstance.queryDatabase({
+			database_id: feedbackDatabaseID,
+			filter: {
+				and: [
+					{
+						property: 'subject_name',
+						rich_text: {
+							equals: topicName,
+						},
+					},
+					{
+						property: 'max',
+						number: {
+							greater_than_or_equal_to: topicPerformance,
+						},
+					},
+					{
+						property: 'min',
+						number: {
+							less_than_or_equal_to: topicPerformance,
+						},
+					},
+				],
+			},
+		});
 
+		if (!feedbackResults.results[0]) {
+			Logging.warning(`No feedback found for (${topicName} - ${topicPerformance})`);
+			Logging.warning(feedbackResults);
+			/** If there is no feedback range that includes student performance, return the generic default feedback */
+			return new FeedbackRange({});
+		}
+		const selectedFeedback = feedbackResults.results[0];
+		if (!('properties' in selectedFeedback)) {
+			throw new Error(`${FILE_TAG}${FUNC_TAG} No properties found in Feedback DB Queried Row`);
+		}
+
+		const adapted = adaptNotionEntry(selectedFeedback.properties);
 		Logging.info(
-			`${FILE_TAG}${FUNC_TAG} Retrieved: ${mockedUpFeedback.length} ${subjectName} feedback ranges from: ${DATA_SOURCE}`,
+			`${FILE_TAG}${FUNC_TAG} ${DATA_SOURCE} Feedback retrieved (${topicName} ${topicPerformance}): [${adapted.min} - ${adapted.max}] => ${adapted.message}`,
 		);
 
-		const adaptedfeedback = mockedUpFeedback.map((feedback) => new FeedbackRange(feedback));
+		const feedback = new FeedbackRange(adapted);
 
-		/** Get only the range that applies to the student performance */
-		const actualFeedback = adaptedfeedback.find(
-			(everyfeedback) => everyfeedback.range.min <= subjectPerf && everyfeedback.range.max >= subjectPerf,
-		);
-
-		Logging.info(
-			`${FILE_TAG}${FUNC_TAG} Feedback that matched ${subjectPerf} score is : ${JSON.stringify(actualFeedback?.range)}.`,
-		);
-
-		/** If there is no feedback range that includes student performance, return the generic default feedback */
-		return actualFeedback ?? new FeedbackRange({});
+		return feedback;
 	} catch (error) {
 		throw new Error(`${FILE_TAG}${FUNC_TAG} Error retriving FeedbackRanges objects: ${error}`);
 	}
 };
 
+/** Dummy Mocked */
 const getFeedbackBySkillOrTopicPerformance = (skillOrTopicName: string, skillOrTopicPerf: number): FeedbackRange => {
 	const FUNC_TAG = '.[getFeedbackBySkillOrTopic]';
 	const DATA_SOURCE = 'MOCK UP DATA';
@@ -63,12 +109,12 @@ const getFeedbackBySkillOrTopicPerformance = (skillOrTopicName: string, skillOrT
 
 		/** Get only the range that applies to the student performance */
 		const actualFeedback = adaptedfeedback.find(
-			(everyfeedback) => everyfeedback.range.min <= skillOrTopicPerf && everyfeedback.range.max >= skillOrTopicPerf,
+			(everyfeedback) => everyfeedback.min <= skillOrTopicPerf && everyfeedback.max >= skillOrTopicPerf,
 		);
 
 		Logging.info(
 			`${FILE_TAG}${FUNC_TAG} Feedback that matched score in Skill Or Topic ${skillOrTopicPerf} is : ${JSON.stringify(
-				actualFeedback?.range,
+				actualFeedback,
 			)}.`,
 		);
 
@@ -79,4 +125,4 @@ const getFeedbackBySkillOrTopicPerformance = (skillOrTopicName: string, skillOrT
 	}
 };
 
-export { getFeedbackBySubjectAndPerformance, getFeedbackBySkillOrTopicPerformance };
+export { getFeedbackBySkillOrTopicPerformance, getExternalFeedbackByPerformance };

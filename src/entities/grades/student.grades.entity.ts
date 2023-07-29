@@ -16,7 +16,7 @@ export class StudentGrades implements IStudentGrades {
 	/** Math */
 	subjects: Subject[] = [];
 
-	constructor(_grades: any) {
+	constructor(_grades: any, _subjects: Subject[]) {
 		if (!('overall' in _grades) || isNaN(_grades.overall)) {
 			Logging.warning(`${TAG} overall is not a valid number: ${_grades.overall}. overall_perf will be set to 0.`);
 			this.overall_perf = 0;
@@ -30,12 +30,11 @@ export class StudentGrades implements IStudentGrades {
 		} else {
 			this.name = _grades.name;
 		}
-		if (!('subjects' in _grades) || _grades.subjects.length === 0) {
+		if (!_subjects.length) {
 			Logging.warning(`${TAG} grades has no subjects: ${_grades.subjects}. subjects will be left as [].`);
 			this.subjects = [];
 		} else {
-			const subjectsInstances = _grades.subjects.map((_subject: any) => new Subject(_subject));
-			this.subjects = subjectsInstances;
+			this.subjects = _subjects;
 		}
 	}
 

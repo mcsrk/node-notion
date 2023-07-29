@@ -1,7 +1,13 @@
 // Custom library
 import Logging from '../../library/Logging';
-import { getFeedbackBySkillOrTopicPerformance } from '../../repositories/feedback.repository';
+
+// Repository
+import { getExternalFeedbackByPerformance } from '../../repositories/feedback.repository';
+
+// Entities
 import { FeedbackRange } from '../feedback/feedback.entity';
+
+// Interfaces
 import { ITopicsOrSkills } from './topic.interface';
 
 const TAG = '[TopicOrSkill]';
@@ -9,7 +15,7 @@ const TAG = '[TopicOrSkill]';
 export class TopicOrSkill implements ITopicsOrSkills {
 	name: string;
 	performance: number;
-	feedback: FeedbackRange;
+	feedback: FeedbackRange = new FeedbackRange({});
 
 	constructor(topicOrSkillData: any) {
 		/** Validation: is name valid? otherwise let it as N/A*/
@@ -32,10 +38,14 @@ export class TopicOrSkill implements ITopicsOrSkills {
 		} else {
 			this.performance = topicOrSkillData.performance;
 		}
-		/** Get subject's feedback based on performance */
-		const topicOrSkillFeedback = getFeedbackBySkillOrTopicPerformance(this.name, this.performance);
-		this.feedback = topicOrSkillFeedback;
 	}
+
+	/** Get subject's feedback based on performance */
+	async setSubtopicFeedback(): Promise<void> {
+		const subjectFeedback = await getExternalFeedbackByPerformance(this.name, this.performance);
+		this.feedback = subjectFeedback;
+	}
+
 	exportStrategyForNotion(strategyVariableName: string): { [key: string]: string } {
 		const exportedStrategy = this.feedback.exportFeedbackForNotion(strategyVariableName);
 		return exportedStrategy;

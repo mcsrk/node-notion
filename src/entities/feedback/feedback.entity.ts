@@ -33,7 +33,7 @@ export class FeedbackRange implements IFeedbackRange {
 			this.min = min;
 			this.max = max;
 		} else {
-			Logging.warning(`${FILE_TAG} feedback range is missing or invalid. It'll be set to the default range: 0 to 100.`);
+			// Logging.warning(`${FILE_TAG} feedback range is missing or invalid, it'll be set to the default range: 0 to 100.`);
 			this.min = this.defaults.min; // Use default min
 			this.max = this.defaults.max; // Use default max
 		}
@@ -44,9 +44,7 @@ export class FeedbackRange implements IFeedbackRange {
 			this.message = feedbackData.message;
 		} else {
 			// Use default feedback if feedback is missing or invalid
-			Logging.warning(
-				`${FILE_TAG} feedback message is missing or invalid :${feedbackData.feedback}, message will be set to default.`,
-			);
+			// Logging.warning(`${FILE_TAG} feedback message is missing or invalid, it'll be set to default.`);
 			this.message = this.defaults.message;
 		}
 	}

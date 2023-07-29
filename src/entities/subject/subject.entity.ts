@@ -1,5 +1,5 @@
 // Repositories
-import { getFeedbackBySubjectAndPerformance } from '../../repositories/feedback.repository';
+import { getExternalFeedbackByPerformance } from '../../repositories/feedback.repository';
 
 // Utils
 import { floatToPerformance } from '../../utils/utils';
@@ -8,6 +8,9 @@ import { floatToPerformance } from '../../utils/utils';
 import { FeedbackRange } from '../feedback/feedback.entity';
 import { TopicOrSkill } from '../topic/topic.entity';
 import { ISubject } from './subject.interface';
+
+// Custom Libraries
+import Logging from '../../library/Logging';
 
 // Constants
 import { findSubjectNotionPrefixByName } from '../../constants/subjects';
@@ -22,7 +25,7 @@ export class Subject implements ISubject {
 	skillsOfDifficulty: TopicOrSkill[] = [];
 
 	/** Subject special comments based on the performance */
-	feedback: FeedbackRange;
+	feedback: FeedbackRange = new FeedbackRange({});
 
 	constructor(_subject: any) {
 		if (!('name' in _subject) || _subject.name === '') {
@@ -53,10 +56,26 @@ export class Subject implements ISubject {
 			tss.sort((a: TopicOrSkill, b: TopicOrSkill) => a.performance - b.performance);
 			this.skillsOfDifficulty = tss;
 		}
+	}
 
-		/** Get subject's feedback based on performance */
-		const subjectFeedback = getFeedbackBySubjectAndPerformance(_subject.name, _subject.performance);
+	/** Get subject's feedback based on performance */
+	async setSubjectFeedback(): Promise<void> {
+		const subjectFeedback = await getExternalFeedbackByPerformance(this.name, this.performance);
 		this.feedback = subjectFeedback;
+	}
+
+	async setSubtopicsFeedback(): Promise<void> {
+		/** Adapt student data and feedback data to this server valid structure */
+
+		const subtopics: TopicOrSkill[] = [...this.skillsOfDifficulty, ...this.topicsOfDifficulty];
+
+		const subtopicsFeedbackPromises = subtopics.map(
+			async (_subtopic: TopicOrSkill) =>
+				/** Create Subject instance and retrieves feedback from source*/
+				await _subtopic.setSubtopicFeedback(),
+		);
+
+		await Promise.all(subtopicsFeedbackPromises);
 	}
 
 	private exportImprovementStrategies(): { [key: string]: string } {
@@ -105,7 +124,6 @@ export class Subject implements ISubject {
 		// Get the feedback exported data
 		const specialComments = this.feedback.exportFeedbackForNotion(`${subjectNotionPrefix}_special_comments`);
 		const improvementStrategies = this.exportImprovementStrategies();
-
 		// Merge the feedbackData into the exportSubject
 		exportSubject = { ...exportSubject, ...specialComments, ...improvementStrategies };
 
