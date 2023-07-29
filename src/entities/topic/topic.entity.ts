@@ -1,5 +1,7 @@
 // Custom library
 import Logging from '../../library/Logging';
+import { getFeedbackBySkillOrTopicPerformance } from '../../repositories/feedback.repository';
+import { FeedbackRange } from '../feedback/feedback.entity';
 import { ITopicsOrSkills } from './topic.interface';
 
 const TAG = '[TopicOrSkill]';
@@ -7,6 +9,7 @@ const TAG = '[TopicOrSkill]';
 export class TopicOrSkill implements ITopicsOrSkills {
 	name: string;
 	performance: number;
+	feedback: FeedbackRange;
 
 	constructor(topicOrSkillData: any) {
 		/** Validation: is name valid? otherwise let it as N/A*/
@@ -29,5 +32,12 @@ export class TopicOrSkill implements ITopicsOrSkills {
 		} else {
 			this.performance = topicOrSkillData.performance;
 		}
+		/** Get subject's feedback based on performance */
+		const topicOrSkillFeedback = getFeedbackBySkillOrTopicPerformance(this.name, this.performance);
+		this.feedback = topicOrSkillFeedback;
+	}
+	exportStrategyForNotion(strategyVariableName: string): { [key: string]: string } {
+		const exportedStrategy = this.feedback.exportFeedbackForNotion(strategyVariableName);
+		return exportedStrategy;
 	}
 }

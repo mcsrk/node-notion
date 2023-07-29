@@ -4,8 +4,5 @@ export interface IFeedbackRange {
 		min: number;
 		max: number;
 	};
-	feedback: {
-		special_comment: string;
-		strategies: { message: string }[];
-	};
+	message: string;
 }

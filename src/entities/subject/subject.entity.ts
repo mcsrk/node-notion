@@ -21,7 +21,7 @@ export class Subject implements ISubject {
 	topicsOfDifficulty: TopicOrSkill[] = [];
 	skillsOfDifficulty: TopicOrSkill[] = [];
 
-	/** Subject feedback based on the performance */
+	/** Subject special comments based on the performance */
 	feedback: FeedbackRange;
 
 	constructor(_subject: any) {
@@ -37,23 +37,46 @@ export class Subject implements ISubject {
 			this.performance = _subject.performance;
 		}
 
+		/** Sort subtopics from lowest performance to hiigher performance */
 		if (!('topicsOfDifficulty' in _subject)) {
 			throw new Error(`${FILE_TAG} subject has no topicsOfDifficulty: ${_subject.topicsOfDifficulty}`);
 		} else {
-			const tds: TopicOrSkill[] = _subject.topicsOfDifficulty.map((td: any) => new TopicOrSkill(td));
+			let tds: TopicOrSkill[] = _subject.topicsOfDifficulty.map((td: any) => new TopicOrSkill(td));
+			tds.sort((a: TopicOrSkill, b: TopicOrSkill) => a.performance - b.performance);
 			this.topicsOfDifficulty = tds;
 		}
 
 		if (!('skillsOfDifficulty' in _subject)) {
 			throw new Error(`${FILE_TAG} subject has no skillsOfDifficulty: ${_subject.skillsOfDifficulty}`);
 		} else {
-			const tss: TopicOrSkill[] = _subject.skillsOfDifficulty.map((ts: any) => new TopicOrSkill(ts));
+			let tss: TopicOrSkill[] = _subject.skillsOfDifficulty.map((ts: any) => new TopicOrSkill(ts));
+			tss.sort((a: TopicOrSkill, b: TopicOrSkill) => a.performance - b.performance);
 			this.skillsOfDifficulty = tss;
 		}
 
 		/** Get subject's feedback based on performance */
-		const studentFeedback = getFeedbackBySubjectAndPerformance(_subject.name, _subject.performance);
-		this.feedback = studentFeedback;
+		const subjectFeedback = getFeedbackBySubjectAndPerformance(_subject.name, _subject.performance);
+		this.feedback = subjectFeedback;
+	}
+
+	private exportImprovementStrategies(): { [key: string]: string } {
+		const subjectNotionPrefix = findSubjectNotionPrefixByName(this.name);
+		/** Merge and Sort the subtopics from worst performance to higher performacne
+		 *  so the strategies will be sorted from more important to less important */
+		const subTopics: TopicOrSkill[] = [...this.topicsOfDifficulty, ...this.skillsOfDifficulty];
+		subTopics.sort((a: TopicOrSkill, b: TopicOrSkill) => a.performance - b.performance);
+
+		let exportedStrategies: { [key: string]: string } = {};
+
+		subTopics.forEach((subTopic: TopicOrSkill, index) => {
+			const numeration = index + 1;
+
+			/** Add subtopics strategies */
+			const subTopicStrategy = subTopic.exportStrategyForNotion(`${subjectNotionPrefix}_imprv_strategies_${numeration}`);
+			exportedStrategies = { ...exportedStrategies, ...subTopicStrategy };
+		});
+
+		return exportedStrategies;
 	}
 
 	exportGradesForNotion(): { [key: string]: string } {
@@ -80,10 +103,11 @@ export class Subject implements ISubject {
 		});
 
 		// Get the feedback exported data
-		const feedbackData = this.feedback.exportFeedbackForNotion(this.name);
+		const specialComments = this.feedback.exportFeedbackForNotion(`${subjectNotionPrefix}_special_comments`);
+		const improvementStrategies = this.exportImprovementStrategies();
 
 		// Merge the feedbackData into the exportSubject
-		exportSubject = { ...exportSubject, ...feedbackData };
+		exportSubject = { ...exportSubject, ...specialComments, ...improvementStrategies };
 
 		return exportSubject;
 	}
