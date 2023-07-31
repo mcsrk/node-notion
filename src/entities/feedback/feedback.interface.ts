@@ -4,4 +4,6 @@ export interface IFeedbackRange {
 	max: number;
 
 	message: string;
+	suggestions: string;
+	study_resource: { name: string; href: string | null };
 }

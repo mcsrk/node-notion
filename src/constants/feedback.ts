@@ -2,7 +2,10 @@
  *  used in every subject-related variable in
  *  the Notion Roadmap Template */
 
-export const DEFAULT_FEEDBACK_MSG = Object.freeze({
-	SPECIAL_COMMENT: 'No special comments defined yet',
-	IMPROVEMENT_STRATEGY: '-',
+export const DEFAULT_FEEDBACK = Object.freeze({
+	MIN: 0,
+	MAX: 100,
+	MESSAGE: 'No feedback defined yet',
+	STUDY_RESOURCE: { name: 'No study resource defined yet', href: null },
+	SUGGESTIONS: 'No suggestions defined yet',
 });

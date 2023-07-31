@@ -47,7 +47,7 @@ export class TopicOrSkill implements ITopicsOrSkills {
 	}
 
 	exportStrategyForNotion(strategyVariableName: string): { [key: string]: string } {
-		const exportedStrategy = this.feedback.exportFeedbackForNotion(strategyVariableName);
+		const exportedStrategy = this.feedback.exportFeedbackMessageForNotion(strategyVariableName);
 		return exportedStrategy;
 	}
 }

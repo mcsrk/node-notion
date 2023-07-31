@@ -1,5 +1,5 @@
 // Constants
-import { DEFAULT_FEEDBACK_MSG } from '../../constants/feedback';
+import { DEFAULT_FEEDBACK } from '../../constants/feedback';
 
 // Custom library
 import Logging from '../../library/Logging';
@@ -12,13 +12,8 @@ export class FeedbackRange implements IFeedbackRange {
 	min: number;
 	max: number;
 	message: string;
-
-	// Default values object
-	private defaults = {
-		min: 0,
-		max: 100,
-		message: DEFAULT_FEEDBACK_MSG.IMPROVEMENT_STRATEGY,
-	};
+	suggestions: string;
+	study_resource: { name: string; href: string | null };
 
 	constructor(feedbackData: any) {
 		/** Validate and set the range
@@ -34,22 +29,32 @@ export class FeedbackRange implements IFeedbackRange {
 			this.max = max;
 		} else {
 			// Logging.warning(`${FILE_TAG} feedback range is missing or invalid, it'll be set to the default range: 0 to 100.`);
-			this.min = this.defaults.min; // Use default min
-			this.max = this.defaults.max; // Use default max
+			this.min = DEFAULT_FEEDBACK.MIN;
+			this.max = DEFAULT_FEEDBACK.MAX;
 		}
 
-		// Validate feddback message
+		// Validate feedback message
 		if ('message' in feedbackData && feedbackData.message) {
-			// If special_comment is missing, use the default value
 			this.message = feedbackData.message;
 		} else {
-			// Use default feedback if feedback is missing or invalid
 			// Logging.warning(`${FILE_TAG} feedback message is missing or invalid, it'll be set to default.`);
-			this.message = this.defaults.message;
+			this.message = DEFAULT_FEEDBACK.MESSAGE;
+		}
+		// Validate feedback study resource
+		if ('study_resource' in feedbackData && feedbackData.study_resource) {
+			this.study_resource = feedbackData.study_resource;
+		} else {
+			this.study_resource = DEFAULT_FEEDBACK.STUDY_RESOURCE;
+		}
+		// Validate feedback suggestion
+		if ('suggestions' in feedbackData && feedbackData.suggestions) {
+			this.suggestions = feedbackData.suggestions;
+		} else {
+			this.suggestions = DEFAULT_FEEDBACK.SUGGESTIONS;
 		}
 	}
 
-	exportFeedbackForNotion(feedbackNotionVariableName: string): { [key: string]: string } {
+	exportFeedbackMessageForNotion(feedbackNotionVariableName: string): { [key: string]: string } {
 		const exportSubject: { [key: string]: string } = {};
 
 		exportSubject[feedbackNotionVariableName] = this.message;

@@ -122,7 +122,7 @@ export class Subject implements ISubject {
 		});
 
 		// Get the feedback exported data
-		const specialComments = this.feedback.exportFeedbackForNotion(`${subjectNotionPrefix}_special_comments`);
+		const specialComments = this.feedback.exportFeedbackMessageForNotion(`${subjectNotionPrefix}_special_comments`);
 		const improvementStrategies = this.exportImprovementStrategies();
 		// Merge the feedbackData into the exportSubject
 		exportSubject = { ...exportSubject, ...specialComments, ...improvementStrategies };
