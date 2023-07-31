@@ -9,8 +9,16 @@ import { mockSkillOrTopicStrategies } from '../mocks/feedback_ranges';
 
 const FILE_TAG = '[FeedbackRepo]';
 
-const adaptNotionEntry = (notionEntry: any): { [key: string]: number | string | null } => {
-	let adaptedEntry: { [key: string]: number | string | null } = { min: null, max: null, message: null };
+const notionFeedbackAdapter = (notionEntry: any): { [key: string]: number | string | object | null } => {
+	Logging.warning('Notion ROW');
+	Logging.warning(JSON.stringify(notionEntry));
+	let adaptedEntry: { [key: string]: number | string | object | null } = {
+		min: null,
+		max: null,
+		message: null,
+		study_resource: { name: null, href: null },
+		suggestions: null,
+	};
 
 	if (notionEntry.min.number) {
 		adaptedEntry['min'] = notionEntry.min.number;
@@ -20,6 +28,16 @@ const adaptNotionEntry = (notionEntry: any): { [key: string]: number | string | 
 	}
 	if (notionEntry.message.rich_text[0].plain_text) {
 		adaptedEntry['message'] = notionEntry.message.rich_text[0].plain_text;
+	}
+	if (notionEntry.study_resource.rich_text[0]) {
+		const resource = {
+			name: notionEntry.study_resource.rich_text[0].plain_text,
+			href: notionEntry.study_resource.rich_text[0].href,
+		};
+		adaptedEntry['study_resource'] = resource;
+	}
+	if (notionEntry.suggestions.rich_text[0].plain_text) {
+		adaptedEntry['suggestions'] = notionEntry.suggestions.rich_text[0].plain_text;
 	}
 	return adaptedEntry;
 };
@@ -77,7 +95,7 @@ const getExternalFeedbackByPerformance = async (
 			throw new Error(`${FILE_TAG}${FUNC_TAG} No properties found in Feedback DB Queried Row`);
 		}
 
-		const adapted = adaptNotionEntry(selectedFeedback.properties);
+		const adapted = notionFeedbackAdapter(selectedFeedback.properties);
 		Logging.info(
 			`${FILE_TAG}${FUNC_TAG} ${DATA_SOURCE} Feedback retrieved (${topicName} ${topicPerformance}): [${adapted.min} - ${adapted.max}] => ${adapted.message}`,
 		);
