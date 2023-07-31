@@ -31,4 +31,10 @@ export const Schemas = {
 			},
 		}),
 	},
+	subject: {
+		getFeedbackRow: Joi.object({
+			name: Joi.string().required(),
+			performance: Joi.number().required(),
+		}),
+	},
 };

@@ -1,3 +1,4 @@
+import { QueryDatabaseResponse } from '@notionhq/client/build/src/api-endpoints';
 import { FeedbackRange } from '../entities/feedback/feedback.entity';
 import NotionInstance from '../infrastructure/notion';
 
@@ -108,6 +109,54 @@ const getExternalFeedbackByPerformance = async (
 	}
 };
 
+const getNotionDBFeedbackRaw = async (topicName: string, topicPerformance: number): Promise<QueryDatabaseResponse> => {
+	const FUNC_TAG = '.[getFeedbackBySubject]';
+
+	try {
+		const feedbackDBName = 'Feedback';
+		/** Get all feedback ranges from source*/
+		const feedbackDatabaseMeta = await NotionInstance.searchDatabase(feedbackDBName);
+		if (!feedbackDatabaseMeta.results[0]) {
+			throw new Error(`No database found by searchTerm: ${feedbackDBName}`);
+		}
+		const feedbackDatabaseID = feedbackDatabaseMeta.results[0].id;
+		const feedbackResults = await NotionInstance.queryDatabase({
+			database_id: feedbackDatabaseID,
+			filter: {
+				and: [
+					{
+						property: 'subject_name',
+						rich_text: {
+							equals: topicName,
+						},
+					},
+					{
+						property: 'max',
+						number: {
+							greater_than_or_equal_to: topicPerformance,
+						},
+					},
+					{
+						property: 'min',
+						number: {
+							less_than_or_equal_to: topicPerformance,
+						},
+					},
+				],
+			},
+		});
+
+		const selectedFeedback = feedbackResults.results[0];
+		if (!('properties' in selectedFeedback)) {
+			throw new Error(`${FILE_TAG}${FUNC_TAG} No properties found in Feedback DB Queried Row`);
+		}
+
+		return feedbackResults;
+	} catch (error) {
+		throw new Error(`${FILE_TAG}${FUNC_TAG} Error retriving FeedbackRanges objects: ${error}`);
+	}
+};
+
 /** Dummy Mocked */
 const getFeedbackBySkillOrTopicPerformance = (skillOrTopicName: string, skillOrTopicPerf: number): FeedbackRange => {
 	const FUNC_TAG = '.[getFeedbackBySkillOrTopic]';
@@ -143,4 +192,4 @@ const getFeedbackBySkillOrTopicPerformance = (skillOrTopicName: string, skillOrT
 	}
 };
 
-export { getFeedbackBySkillOrTopicPerformance, getExternalFeedbackByPerformance };
+export { getFeedbackBySkillOrTopicPerformance, getExternalFeedbackByPerformance, getNotionDBFeedbackRaw };

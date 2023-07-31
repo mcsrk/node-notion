@@ -8,6 +8,7 @@ import Logging from './library/Logging';
 
 // Routes
 import roadmapRoutes from './routes/roadmap.routes';
+import debugRoutes from './routes/debug.routes';
 const app = express();
 
 app.use(express.urlencoded({ extended: true }));
@@ -32,6 +33,7 @@ app.get('/', (_, res) => {
 });
 
 app.use('/students', roadmapRoutes);
+app.use('/debug', debugRoutes);
 
 const PORT = 8000;
 
