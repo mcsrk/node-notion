@@ -5,6 +5,10 @@ import { AppendBlockChildrenParameters } from '@notionhq/client/build/src/api-en
 import { ITable } from './table.interface';
 import { ITableRow } from './row/row.interface';
 import { TableRow } from './row/row.entity';
+
+// Entities
+import { RichTextConstructor } from '../rich-text/rich.text';
+
 import Logging from '../../library/Logging';
 
 const TAG = '[Table]';
@@ -22,7 +26,7 @@ export class Table implements ITable {
 	type?: 'table';
 	object?: 'block';
 
-	constructor(parentId: string, headerCols: string[], maxRows?: number) {
+	constructor(parentId: string, headerCols: RichTextConstructor[][], maxRows?: number) {
 		if (!headerCols.length) {
 			throw new Error(`${TAG} Table must have at least 1 column, instead found ${headerCols.length} cols `);
 		}
@@ -44,7 +48,7 @@ export class Table implements ITable {
 		}
 	}
 
-	addRow(rowData: string[]): void {
+	addRow(rowData: RichTextConstructor[][]): void {
 		if (rowData.length !== this.table.table_width) {
 			throw new Error(
 				`${TAG} Row added mismatch the columns (${rowData.length}) of the table(${this.table.table_width}) `,

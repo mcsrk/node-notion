@@ -13,6 +13,7 @@ import { Table } from '../entities/table/table.entity';
 
 // Constants
 import { DEFAULT_TABLE_HEADER, DEFAULT_TABLE_ROWS } from '../mocks/study_plan_table';
+import { RichTextConstructor } from '../entities/rich-text/rich.text';
 const FILE_TAG = '[Debug controller]';
 
 const notionDbViewFeedbackRow = async (req: Request, res: Response) => {
@@ -59,77 +60,44 @@ const createTableInTestPage = async (req: Request, res: Response) => {
 		const templatePage = await NotionInstance.getPage(tempalteId);
 		const templatePageChildren = await NotionInstance.getPageBlockChildren(tempalteId);
 
-		// 	[
-		// 		{
-		// 			type: 'text',
-		// 			text: {
-		// 				content: 'Goal',
-		// 			},
-		// 		},
-		// 	],
-		// 	[
-		// 		{
-		// 			type: 'text',
-		// 			text: {
-		// 				content: 'Week',
-		// 			},
-		// 		},
-		// 	],
-		// 	[
-		// 		{
-		// 			type: 'text',
-		// 			text: {
-		// 				content: 'Resources',
-		// 			},
-		// 		},
-		// 	],
-		// 	[
-		// 		{
-		// 			type: 'text',
-		// 			text: {
-		// 				content: 'Suggestions',
-		// 			},
-		// 		},
-		// 	],
-		// ];
-		// const bodyRow: RichTextItemRequest[][] = [
-		// 	[
-		// 		{
-		// 			type: 'text',
-		// 			text: {
-		// 				content: 'Row 1 - Cell 1',
-		// 			},
-		// 		},
-		// 	],
-		// 	[
-		// 		{
-		// 			type: 'text',
-		// 			text: {
-		// 				content: 'Row 1 - Cell 2',
-		// 			},
-		// 		},
-		// 	],
-		// 	[
-		// 		{
-		// 			type: 'text',
-		// 			text: {
-		// 				content: 'Row 1 - Cell 3',
-		// 			},
-		// 		},
-		// 	],
-		// 	[
-		// 		{
-		// 			type: 'text',
-		// 			text: {
-		// 				content: 'Row 1 - Cell 4',
-		// 			},
-		// 		},
-		// 	],
-		// ];
-		const headerCols = DEFAULT_TABLE_HEADER;
+		const headerCols: RichTextConstructor[][] = [
+			[{ content: 'Goal', bold: true, color: 'blue' }],
+			[{ content: 'Week', bold: true, color: 'blue' }],
+			[{ content: 'Resources', bold: true, color: 'blue' }],
+			[
+				{
+					content: 'Suggestions',
+					bold: true,
+					color: 'blue',
+				},
+			],
+		];
+		const dummyDataRow: RichTextConstructor[][] = [
+			[
+				{ content: 'Reading Comprehension Skills', bold: true },
+				{ content: 'Algebra ', bold: true },
+				{ content: 'Fraction Skills ', bold: true },
+			],
+			[{ content: '1', bold: true }],
+			[
+				{ content: 'Comparative Text Analysis', bold: true },
+				{ content: 'Logic Games', bold: true },
+			],
+			[
+				{
+					content:
+						'Analyze and compare 2-3 different texts daily, identifying similarities and differences in themes, characters, and settings.',
+					bold: true,
+				},
+				{
+					content: '\n- Solve 10-15 logic games and puzzles to enhance critical thinking skills.',
+					bold: true,
+				},
+			],
+		];
 
-		const customTable = new Table(tempalteId, headerCols, 9);
-		DEFAULT_TABLE_ROWS.map((row) => customTable.addRow(row));
+		const customTable = new Table(tempalteId, headerCols);
+		customTable.addRow(dummyDataRow);
 
 		await NotionInstance.appendChildren(customTable.generateTableRequestBody());
 		let returns = {
