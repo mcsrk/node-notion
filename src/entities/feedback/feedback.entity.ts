@@ -44,13 +44,13 @@ export class FeedbackRange implements IFeedbackRange {
 		if ('study_resource' in feedbackData && feedbackData.study_resource) {
 			this.study_resource = feedbackData.study_resource;
 		} else {
-			this.study_resource = DEFAULT_FEEDBACK.STUDY_RESOURCE;
+			this.study_resource = DEFAULT_FEEDBACK.STUDY_RESOURCE(feedbackData.subjectName);
 		}
 		// Validate feedback suggestion
 		if ('suggestions' in feedbackData && feedbackData.suggestions) {
 			this.suggestions = feedbackData.suggestions;
 		} else {
-			this.suggestions = DEFAULT_FEEDBACK.SUGGESTIONS;
+			this.suggestions = DEFAULT_FEEDBACK.SUGGESTIONS(feedbackData.subjectName);
 		}
 	}
 
