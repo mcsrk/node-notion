@@ -1,10 +1,14 @@
 import { isFullBlock, isFullPage } from '@notionhq/client';
 import {
 	AppendBlockChildrenParameters,
+	BlockObjectRequest,
 	CreatePageParameters,
 	GetPageResponse,
 	ListBlockChildrenResponse,
 } from '@notionhq/client/build/src/api-endpoints';
+
+// Constants
+import { STUDY_PLAN_CONFIG } from '../constants/study_plan';
 
 const FILE_TAG = '[RoadmapTemplate]';
 export class RoadmapTemplate {
@@ -77,7 +81,7 @@ export class RoadmapTemplate {
 			throw new Error(`${FILE_TAG}${FUNC_TAG} templateChildren has no results`);
 		}
 
-		const a: any[] = templateChildren.results.map((retrievedBlock) => {
+		const templatePageDuplicatedBlocks: any[] = templateChildren.results.map((retrievedBlock) => {
 			if (isFullBlock(retrievedBlock)) {
 				const {
 					object,
@@ -89,10 +93,8 @@ export class RoadmapTemplate {
 					last_edited_by,
 					has_children,
 					archived,
-					type,
 					...blockStructure
 				} = retrievedBlock;
-				// const { type } = retrievedBlock;
 
 				// const blockStructure = retrievedBlock[type];
 				return blockStructure;
@@ -101,7 +103,7 @@ export class RoadmapTemplate {
 
 		this.blocksToAppend = {
 			block_id: pageId, // TODO: move the assign to a clas method that has id and blocks response as parameters
-			children: a,
+			children: templatePageDuplicatedBlocks,
 		};
 	}
 
@@ -122,6 +124,22 @@ export class RoadmapTemplate {
 			type: 'page_id',
 			page_id: newParentId,
 		};
+	}
+
+	setWeeklyStudyPlanBlockToAppend(table: BlockObjectRequest): number {
+		const weeklyStudyPlanBlockIndex = this.blocksToAppend.children.findIndex((item) => {
+			return (
+				item.type === 'paragraph' &&
+				item.paragraph.rich_text &&
+				item.paragraph.rich_text[0] &&
+				item.paragraph.rich_text[0].type === 'text' &&
+				item.paragraph.rich_text[0].text.content === STUDY_PLAN_CONFIG.TEMPLATE_VARIABLE_NAME_TO_REPLACE
+			);
+		});
+
+		this.blocksToAppend.children[weeklyStudyPlanBlockIndex] = table;
+
+		return weeklyStudyPlanBlockIndex;
 	}
 
 	replaceTemplateValues(exportedStudentGradeForNotion: { [key: string]: string }): string {
