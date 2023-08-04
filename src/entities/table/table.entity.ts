@@ -1,5 +1,5 @@
 // Custom library
-import { AppendBlockChildrenParameters } from '@notionhq/client/build/src/api-endpoints';
+import { AppendBlockChildrenParameters, BlockObjectRequest } from '@notionhq/client/build/src/api-endpoints';
 
 // Interfaces
 import { ITable } from './table.interface';
@@ -71,6 +71,13 @@ export class Table implements ITable {
 					table: this.table,
 				},
 			],
+		};
+	}
+	generateBlockRequestBody(): BlockObjectRequest {
+		return {
+			object: this.object,
+			type: this.type,
+			table: this.table,
 		};
 	}
 }
