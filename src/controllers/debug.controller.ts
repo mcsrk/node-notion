@@ -60,7 +60,7 @@ const createTableInTestPage = async (req: Request, res: Response) => {
 		const templatePage = await NotionInstance.getPage(tempalteId);
 		const templatePageChildren = await NotionInstance.getPageBlockChildren(tempalteId);
 
-		const headerCols: RichTextConstructor[][] = [
+		const STUDY_PLAN_HEADER_COLS: RichTextConstructor[][] = [
 			[{ content: 'Goal', bold: true, color: 'blue' }],
 			[{ content: 'Week', bold: true, color: 'blue' }],
 			[{ content: 'Resources', bold: true, color: 'blue' }],
@@ -95,9 +95,16 @@ const createTableInTestPage = async (req: Request, res: Response) => {
 				},
 			],
 		];
+		const dummyDataRow2: RichTextConstructor[][] = [
+			[{ content: 'Another skill' }],
+			[{ content: '2' }],
+			[{ content: 'Another resource', bold: true, href: 'https://www.upwork.com' }],
+			[{ content: 'Another suggestion' }],
+		];
 
-		const customTable = new Table(tempalteId, headerCols);
+		const customTable = new Table(tempalteId, STUDY_PLAN_HEADER_COLS);
 		customTable.addRow(dummyDataRow);
+		customTable.addRow(dummyDataRow2);
 
 		await NotionInstance.appendChildren(customTable.generateTableRequestBody());
 		let returns = {
