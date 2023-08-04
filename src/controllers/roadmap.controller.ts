@@ -13,6 +13,7 @@ import { Subject } from '../entities/subject/subject.entity';
 import Logging from '../library/Logging';
 // Mocke data
 import { DEMO_STUDENT_DATA } from '../mocks/student';
+import { Student } from '../entities/student/student.entity';
 
 const FILE_TAG = '[Notion controller]';
 
@@ -42,10 +43,9 @@ const createRoadmap = async (req: Request, res: Response) => {
 			return res.status(404).json({ message: `Template page: '${template}' not found in Notion workspace` });
 		}
 
-		const tempalteId = searchTemplate.results[0].id;
-		const templatePage = await NotionInstance.getPage(tempalteId);
-		const templatePageChildren = await NotionInstance.getPageBlockChildren(tempalteId);
-
+		const tempalteId = searchTemplate.results[0].id; // roadmap_template id
+		const templatePage = await NotionInstance.getPage(tempalteId); // roadmap_template page
+		const templatePageChildren = await NotionInstance.getPageBlockChildren(tempalteId); // roadmap_template page children
 		const templateInstance = new RoadmapTemplate(templatePage);
 
 		templateInstance.changePageTitle(studentName);
@@ -55,7 +55,7 @@ const createRoadmap = async (req: Request, res: Response) => {
 
 		/** Duplicate and create blocks */
 		templateInstance.setBlocksToAppend(studentRoadmapPageId, templatePageChildren);
-
+		// TODO: Insteead of this code, gotta create a student entity with: Id, Name, Email, Class, Subjects: new Subject[], new StudyPlan (that contains a Table),
 		/** Adapt student data and feedback data to this server valid structure */
 		const subjects = studentGradeData.subjects.map(async (_subjectData: any) => {
 			/** Create Subject instance and retrieves feedback from source*/
@@ -66,14 +66,21 @@ const createRoadmap = async (req: Request, res: Response) => {
 		});
 
 		const subjectsInstances = await Promise.all(subjects);
-		const studentGrade = new StudentGrades(studentGradeData, subjectsInstances);
+		const studentGrades = new StudentGrades(studentGradeData, subjectsInstances);
+
+		const student = new Student(req.body.user, studentGrades, studentRoadmapPageId);
+		student.populateStudyPlan();
+		const weeklyIndex = templateInstance.setWeeklyStudyPlanBlockToAppend(student.studyPlan.generateBlockRequestBody());
 
 		/** Convert student scores from server nested data structure to plain object*/
-		const exportedStudentScores = studentGrade.exportStudentGradeForNotion();
+		const exportedStudentScores = studentGrades.exportStudentGradeForNotion();
 		const exportedSynapStudent = synapStudent.exportSynapStudentForNotion();
-		const valuesToReplace: { [key: string]: string } = { ...exportedSynapStudent, ...exportedStudentScores };
+		const valuesToReplace: { [key: string]: string } = {
+			...exportedSynapStudent,
+			...exportedStudentScores,
+		};
 
-		/** Replace blocks variables with student scores values and subjects comments */
+		// /** Replace blocks variables with student scores values and subjects comments */
 		const stringifiedBlocks = templateInstance.replaceTemplateValues(valuesToReplace);
 		await NotionInstance.appendChildren(templateInstance.blocksToAppend);
 
@@ -81,7 +88,6 @@ const createRoadmap = async (req: Request, res: Response) => {
 			templatePage,
 			templatePageChildren,
 			studentPageId: studentId_PageId,
-			stringifiedBlocks,
 		};
 		Logging.info(`${FILE_TAG}${FUNC_TAG} Returning`);
 		return res.status(200).json(returns);
