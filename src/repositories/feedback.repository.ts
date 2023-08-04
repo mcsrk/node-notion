@@ -11,9 +11,10 @@ import { mockSkillOrTopicStrategies } from '../mocks/feedback_ranges';
 const FILE_TAG = '[FeedbackRepo]';
 
 const notionFeedbackAdapter = (notionEntry: any): { [key: string]: number | string | object | null } => {
-	Logging.warning('Notion ROW');
-	Logging.warning(JSON.stringify(notionEntry));
+	// Logging.warning('Notion ROW');
+	// Logging.warning(JSON.stringify(notionEntry));
 	let adaptedEntry: { [key: string]: number | string | object | null } = {
+		subjectName: null,
 		min: null,
 		max: null,
 		message: null,
@@ -21,6 +22,9 @@ const notionFeedbackAdapter = (notionEntry: any): { [key: string]: number | stri
 		suggestions: null,
 	};
 
+	if (notionEntry.subject_name.title[0].plain_text) {
+		adaptedEntry['subjectName'] = notionEntry.subject_name.title[0].plain_text;
+	}
 	if (notionEntry.min.number) {
 		adaptedEntry['min'] = notionEntry.min.number;
 	}
@@ -30,14 +34,15 @@ const notionFeedbackAdapter = (notionEntry: any): { [key: string]: number | stri
 	if (notionEntry.message.rich_text[0].plain_text) {
 		adaptedEntry['message'] = notionEntry.message.rich_text[0].plain_text;
 	}
-	if (notionEntry.study_resource.rich_text[0]) {
-		const resource = {
+	let resource = null;
+	if (notionEntry.study_resource.rich_text.length && 'plain_text' in notionEntry.study_resource.rich_text[0]) {
+		resource = {
 			name: notionEntry.study_resource.rich_text[0].plain_text,
 			href: notionEntry.study_resource.rich_text[0].href,
 		};
-		adaptedEntry['study_resource'] = resource;
 	}
-	if (notionEntry.suggestions.rich_text[0].plain_text) {
+	adaptedEntry['study_resource'] = resource;
+	if (notionEntry.suggestions.rich_text.length && notionEntry.suggestions.rich_text[0].plain_text) {
 		adaptedEntry['suggestions'] = notionEntry.suggestions.rich_text[0].plain_text;
 	}
 	return adaptedEntry;
