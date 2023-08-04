@@ -1,4 +1,4 @@
-type ColorType =
+export type ColorType =
 	| 'default'
 	| 'gray'
 	| 'brown'
@@ -40,7 +40,7 @@ export type RichTextItemRequest = {
 
 export type RichTextConstructor = {
 	content: string;
-	bold: boolean;
+	bold?: boolean;
 	color?: ColorType;
 	href?: string;
 };
@@ -66,6 +66,6 @@ export class RichTextItem implements RichTextItemRequest {
 		const { content, href, bold, color } = richTextData;
 		this.text = { content, link: href ? { url: href } : null };
 		this.type = 'text';
-		this.annotations = { bold, color };
+		this.annotations = { bold: bold ? bold : false, color };
 	}
 }
