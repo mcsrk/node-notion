@@ -12,9 +12,33 @@ export const CONFIG = Object.freeze({
 	NOTION: {
 		INTEGRATION_TOKEN: NOTION_INTEGRATION_TOKEN,
 	},
+	SYNAP: {
+		API: {
+			// Synap API Docs config
+			maxBodyLength: Infinity,
+			url: 'https://api-org.synap.ac/status',
+			headers: {
+				'X-Syn-Org-Secret': ' < Your organisation secret key >',
+				'X-Syn-Org-id': ' < Your organisation identifier >',
+				'X-api-key': ' < Your API Key >',
+			},
+		},
+		LAMBDA: {
+			SET_UP: {
+				maxBodyLength: Infinity,
+				url: 'https://sf6ef7oa36qazqzsbazx7jv2vy0bcldt.lambda-url.eu-west-2.on.aws/',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+			},
+			// Synap Custom Endpoint made by James from Synap
+			portalId: '1t8EUQEApb',
+			API_KEY: '<<SCHOLARLY_API_KEY>>',
+		},
+	},
 	ROADMAP_TEMPLATE: {
 		RETRIEVE_BLOCKS: 100, // Max 100
 		OVERRIDE_BLOCKS: 100, // Max 100
-		STUDENTS_COLLECTION_PAGE_NAME: "Scholary Roadmaps"
+		STUDENTS_COLLECTION_PAGE_NAME: 'Scholary Roadmaps',
 	},
 });
