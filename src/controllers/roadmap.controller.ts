@@ -5,9 +5,7 @@ import NotionInstance from '../infrastructure/notion';
 
 // Entites
 import { RoadmapTemplate } from '../entities/template.entity';
-import { StudentGrades } from '../entities/grades/student.grades.entity';
 import { SynapStudent } from '../infrastructure/synap/student.entity';
-import { Subject } from '../entities/subject/subject.entity';
 
 // Custom Libraries
 import Logging from '../library/Logging';
@@ -23,9 +21,10 @@ const createRoadmap = async (req: Request, res: Response) => {
 	const FUNC_TAG = '.[createRoadMap]';
 	Logging.info(`${FILE_TAG}${FUNC_TAG} Function started!`);
 	try {
-		const { studentId } = req.params;
-		const synapStudent = new SynapStudent(req.body);
-		const studentGradeData = DEMO_STUDENT_DATA.grade;
+		// const { studentId } = req.params;
+		const { objectId: studentId } = DEMO_STUDENT_DATA.user;
+		const synapStudent = new SynapStudent(DEMO_STUDENT_DATA);
+		const studentData = DEMO_STUDENT_DATA;
 
 		const studentName = synapStudent.getName();
 
@@ -55,41 +54,43 @@ const createRoadmap = async (req: Request, res: Response) => {
 
 		/** Duplicate and create blocks */
 		templateInstance.setBlocksToAppend(studentRoadmapPageId, templatePageChildren);
-		// TODO: Insteead of this code, gotta create a student entity with: Id, Name, Email, Class, Subjects: new Subject[], new StudyPlan (that contains a Table),
-		/** Adapt student data and feedback data to this server valid structure */
-		const subjects = studentGradeData.subjects.map(async (_subjectData: any) => {
-			/** Create Subject instance and retrieves feedback from source*/
-			const subject = new Subject(_subjectData);
-			await subject.setSubjectFeedback();
-			await subject.setSubtopicsFeedback();
-			return subject;
-		});
 
-		const subjectsInstances = await Promise.all(subjects);
-		const studentGrades = new StudentGrades(studentGradeData, subjectsInstances);
+		/** While building the Student:
+		 * - Automatically creates all of the subjects and for each one
+		 * - Retrieves the related feedback entries from the Notion Feedback DB */
+		const student = await Student.build(studentData, studentRoadmapPageId);
 
-		const student = new Student(req.body.user, studentGrades, studentRoadmapPageId);
-		student.populateStudyPlan();
-		const weeklyIndex = templateInstance.setWeeklyStudyPlanBlockToAppend(student.studyPlan.generateBlockRequestBody());
+		/** Build the Weekly Study Plan Notion Table using the feedback retrieved */
+		student.populateWeeklyStudyPlan();
 
-		/** Convert student scores from server nested data structure to plain object*/
-		const exportedStudentScores = studentGrades.exportStudentGradeForNotion();
-		const exportedSynapStudent = synapStudent.exportSynapStudentForNotion();
-		const valuesToReplace: { [key: string]: string } = {
-			...exportedSynapStudent,
-			...exportedStudentScores,
-		};
+		/** Inserts the Weekly Study Plan Table Request body into the template instance for the student */
+		const weeklyStudyBlockToReplaceIndex = templateInstance.setWeeklyStudyPlanBlockToAppend(
+			student.studyPlan.generateBlockRequestBody(),
+		);
 
-		// /** Replace blocks variables with student scores values and subjects comments */
+		if (weeklyStudyBlockToReplaceIndex === -1) {
+			throw new Error(
+				`Couldn't find the Weekly Study Block in template to replace as a table: ${weeklyStudyBlockToReplaceIndex}`,
+			);
+		}
+
+		/** Replace the template values (basic info and subject/subtopics performance)
+		 * with the student infromation and feedback messages */
+		const valuesToReplace = student.exportStudentToNotion();
 		const stringifiedBlocks = templateInstance.replaceTemplateValues(valuesToReplace);
+
+		/** Do a POST Request to create the Student Roadmap out of the modified template */
 		await NotionInstance.appendChildren(templateInstance.blocksToAppend);
 
 		let returns = {
 			templatePage,
 			templatePageChildren,
 			studentPageId: studentId_PageId,
+			stringifiedBlocks,
 		};
+
 		Logging.info(`${FILE_TAG}${FUNC_TAG} Returning`);
+
 		return res.status(200).json(returns);
 	} catch (error) {
 		Logging.error((error as Error).message);

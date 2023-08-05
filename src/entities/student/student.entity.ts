@@ -20,7 +20,9 @@ export class Student implements IStudent {
 	grades: StudentGrades;
 	studyPlan: Table;
 
-	constructor(studentData: any, grades: StudentGrades, templateId: string) {
+	/** New instance of Student requires Async data which can't be retrived in a constructor.
+	 *  Use Student.build() instead so it will be able to get the external data using async methods */
+	private constructor(studentData: any, grades: StudentGrades, templateId: string) {
 		// Validate and set user data
 		const { objectId, name, email, class: class_name } = studentData;
 		if (!(objectId && name && email)) {
@@ -35,7 +37,21 @@ export class Student implements IStudent {
 		this.studyPlan = new Table(templateId, STUDY_PLAN_CONFIG.STUDY_PLAN_HEADER_COLS);
 	}
 
-	populateStudyPlan(): void {
+	public static async build(studentData: any, templateId: string): Promise<Student> {
+		const subjects = studentData.grade.subjects.map(async (_subjectData: any): Promise<Subject> => {
+			/** Create Subject instance and retrieves feedback from source*/
+			const subject = new Subject(_subjectData);
+			await subject.setSubjectFeedback();
+			await subject.setSubtopicsFeedback();
+			return subject;
+		});
+
+		const subjectsInstances = await Promise.all(subjects);
+		const studentGrades = new StudentGrades(studentData.grade, subjectsInstances);
+		return new Student(studentData.user, studentGrades, templateId);
+	}
+
+	populateWeeklyStudyPlan(): void {
 		let subTopicsOfDifficulty: TopicOrSkill[] = [];
 		this.grades.subjects.forEach((_subject: Subject) => {
 			subTopicsOfDifficulty.push(..._subject.skillsOfDifficulty);
@@ -89,12 +105,19 @@ export class Student implements IStudent {
 	}
 
 	exportStudentToNotion(): { [key: string]: string } {
-		const exportSubject: { [key: string]: string } = {};
+		const studentBasicInfoForNotion: { [key: string]: string } = {
+			student_id: this.id,
+			student_name: this.name,
+			student_email: this.email,
+		};
 
-		exportSubject['student_id'] = this.id;
-		exportSubject['student_name'] = this.name;
-		exportSubject['student_email'] = this.email;
+		const studentGradesForNotion = this.grades.exportStudentGradeForNotion();
 
-		return exportSubject;
+		const studentInfoForNotion: { [key: string]: string } = {
+			...studentBasicInfoForNotion,
+			...studentGradesForNotion,
+		};
+
+		return studentInfoForNotion;
 	}
 }
