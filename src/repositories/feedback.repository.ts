@@ -1,14 +1,50 @@
 import { QueryDatabaseResponse } from '@notionhq/client/build/src/api-endpoints';
 import { FeedbackRange } from '../entities/feedback/feedback.entity';
 import NotionInstance from '../infrastructure/notion';
-
+import { CreatePageParameters } from '@notionhq/client/build/src/api-endpoints';
 // Custom library
 import Logging from '../library/Logging';
-
 // Mock up
 import { mockSkillOrTopicStrategies } from '../mocks/feedback_ranges';
 
 const FILE_TAG = '[FeedbackRepo]';
+
+const insertFeedbackRow = async (
+	feedbackDatabaseId: string,
+
+	isSubtopic: boolean,
+	topicName: string,
+	min: number,
+	max: number,
+) => {
+	Logging.info(`[insertingFeedbackRow] ${isSubtopic} ${topicName} ${min} ${max}]`);
+	const pageRowBody: CreatePageParameters = {
+		parent: {
+			database_id: feedbackDatabaseId,
+		},
+		properties: {
+			is_subtopic: {
+				checkbox: isSubtopic,
+			},
+			subject_name: {
+				title: [
+					{
+						text: {
+							content: topicName,
+						},
+					},
+				],
+			},
+			min: {
+				number: min,
+			},
+			max: {
+				number: max,
+			},
+		},
+	};
+	return await NotionInstance.createPage(pageRowBody);
+};
 
 const notionFeedbackAdapter = (notionEntry: any): { [key: string]: number | string | object | null } => {
 	// Logging.warning('Notion ROW');
@@ -42,8 +78,8 @@ const notionFeedbackAdapter = (notionEntry: any): { [key: string]: number | stri
 		};
 	}
 	adaptedEntry['study_resource'] = resource;
-	if (notionEntry.suggestions.rich_text.length && notionEntry.suggestions.rich_text[0].plain_text) {
-		adaptedEntry['suggestions'] = notionEntry.suggestions.rich_text[0].plain_text;
+	if (notionEntry.default_suggestion.rich_text.length && notionEntry.default_suggestion.rich_text[0].plain_text) {
+		adaptedEntry['default_suggestion'] = notionEntry.default_suggestion.rich_text[0].plain_text;
 	}
 	return adaptedEntry;
 };
@@ -197,4 +233,9 @@ const getFeedbackBySkillOrTopicPerformance = (skillOrTopicName: string, skillOrT
 	}
 };
 
-export { getFeedbackBySkillOrTopicPerformance, getExternalFeedbackByPerformance, getNotionDBFeedbackRaw };
+export {
+	getFeedbackBySkillOrTopicPerformance,
+	getExternalFeedbackByPerformance,
+	getNotionDBFeedbackRaw,
+	insertFeedbackRow,
+};
