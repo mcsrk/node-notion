@@ -9,6 +9,7 @@ import {
 
 // Constants
 import { STUDY_PLAN_CONFIG } from '../constants/study_plan';
+import Logging from '../library/Logging';
 
 const FILE_TAG = '[RoadmapTemplate]';
 export class RoadmapTemplate {
@@ -52,6 +53,7 @@ export class RoadmapTemplate {
 			throw new Error(`${FILE_TAG} templatePage has no page as a parent`);
 		}
 		if (!('cover' in templatePage) || !templatePage.cover) {
+			Logging.error(JSON.stringify(templatePage));
 			throw new Error(`${FILE_TAG} templatePage has no cover`);
 		}
 		if (!('file' in templatePage.cover)) {

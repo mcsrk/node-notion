@@ -97,7 +97,20 @@ export class NotionClient {
 		const FUNC_TAG = '.[createStudentIdPage]';
 		const searchStudentIdPageRes = await this.searchPage(studentId);
 
-		const existingStudentIdPage = searchStudentIdPageRes.results[0];
+		// TODO: Insted of pick the first element, check for the element that matches perfectly the searchTerm
+		// const existingStudentIdPage = searchStudentIdPageRes.results[0];
+		console.warn('createStudentIdPage');
+		console.warn(JSON.stringify(searchStudentIdPageRes));
+		const existingStudentIdPage = searchStudentIdPageRes.results.find((page) => {
+			if (page.object === 'page' && 'properties' in page && 'title' in page.properties.title) {
+				if (page.properties.title.type === 'title' && page.properties.title.title.length) {
+					if (page.properties.title.title[0].type === 'text') {
+						Logging.setup(studentId);
+						return page.properties.title.title[0].text.content === studentId;
+					}
+				}
+			}
+		});
 		if (existingStudentIdPage) {
 			/** This code deletes the code of a existing page, which takes a lot of time (3 mins per page/100 blocks) */
 			const blocksToRemove = await this.notion.blocks.children.list({

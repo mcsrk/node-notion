@@ -180,6 +180,7 @@ const synapDemoDataInspector = (req: Request, res: Response) => {
 		});
 	}
 };
+
 const insertFeedbackEntiresAutomatically = async (req: Request, res: Response) => {
 	try {
 		// Do something with the parsed data
