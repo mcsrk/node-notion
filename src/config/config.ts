@@ -4,6 +4,7 @@ dotenv.config();
 
 const SERVER_PORT = process.env.SERVER_PORT ? Number(process.env.SERVER_PORT) : 8000;
 const NOTION_INTEGRATION_TOKEN = process.env.NOTION_INTEGRATION_TOKEN || '';
+const AIRTABLE_ACCESS_TOKEN = process.env.AIRTABLE_ACCESS_TOKEN || '';
 
 export const CONFIG = Object.freeze({
 	SERVER: {
@@ -41,4 +42,5 @@ export const CONFIG = Object.freeze({
 		OVERRIDE_BLOCKS: 100, // Max 100
 		STUDENTS_COLLECTION_PAGE_NAME: 'Scholary Roadmaps',
 	},
+	AIRTABLE: { ACCESS_TOKEN: AIRTABLE_ACCESS_TOKEN },
 });

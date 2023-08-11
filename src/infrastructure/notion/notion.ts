@@ -11,6 +11,7 @@ import {
 	QueryDatabaseParameters,
 	QueryDatabaseResponse,
 	SearchResponse,
+	UpdatePageParameters,
 	UpdatePageResponse,
 } from '@notionhq/client/build/src/api-endpoints';
 
@@ -199,5 +200,10 @@ export class NotionClient {
 
 		const pageCreationResponse = await this.createPage(pageBody);
 		return pageCreationResponse.id;
+	}
+	async updatePage(updateBody: UpdatePageParameters): Promise<UpdatePageResponse> {
+		const FUNC_TAG = '.[updatePage]';
+		const response = await this.notion.pages.update(updateBody);
+		return response;
 	}
 }

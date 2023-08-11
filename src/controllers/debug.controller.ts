@@ -1,9 +1,14 @@
 import { Request, Response } from 'express';
 // Repositories
-import { getNotionDBFeedbackRaw, insertFeedbackRow } from '../repositories/feedback.repository';
+import {
+	getNotionDBFeedbackRaw,
+	insertFeedbackRow,
+	updateNotionFeedbackRow,
+} from '../repositories/feedback.repository';
 
 // Infrastructure
 import NotionInstance from '../infrastructure/notion';
+import AirtableInstance from '../infrastructure/airtable';
 
 // Custom Libraries
 import Logging from '../library/Logging';
@@ -16,9 +21,11 @@ import { RichTextConstructor } from '../entities/rich-text/rich.text';
 import { SYNAP_REDUCED_MOCKED_DATA } from '../mocks/reduced-synap-demo-data';
 import { SYNAP_MOCKED_DATA } from '../mocks/synap-scholarly-pipeline-output';
 import { CreatePageResponse } from '@notionhq/client/build/src/api-endpoints';
+import axios from 'axios';
 
 const FILE_TAG = '[Debug controller]';
 
+// TODO: llamar esta funcion iterativamente para cada valor obtenido enairTableData para luego actualizar el registro correspondiente en notion db
 const notionDbViewFeedbackRow = async (req: Request, res: Response) => {
 	const FUNC_TAG = '.[notionDbViewFeedbackRow]';
 	Logging.info(`${FILE_TAG}${FUNC_TAG} INIT`);
@@ -169,8 +176,8 @@ const synapDemoDataInspector = (req: Request, res: Response) => {
 			subtopics: Array.from(groupedLabels.subtopic).sort(),
 			subject: Array.from(groupedLabels.subject).sort(),
 		};
-
-		res.status(200).json({ entriesLength, individualSubjects: groupedLabelsArray });
+		const ids = data.map((ele) => ele._id);
+		res.status(200).json({ entriesLength, individualSubjects: groupedLabelsArray, ids });
 	} catch (error) {
 		Logging.error('Error reading beauty-sholarly-pipeline-output.json');
 		Logging.error(error);
@@ -290,4 +297,72 @@ const insertFeedbackEntiresAutomatically = async (req: Request, res: Response) =
 	}
 };
 
-export { notionDbViewFeedbackRow, createTableInTestPage, synapDemoDataInspector, insertFeedbackEntiresAutomatically };
+const airTableData = async (req: Request, res: Response) => {
+	const FUNC_TAG = '.[airTableData]';
+	Logging.info(`${FILE_TAG}${FUNC_TAG} Started...`);
+
+	try {
+		const responseSubjects = await AirtableInstance.getSubjects();
+		const topicsBySubject: { [key: string]: any[] } = {};
+		responseSubjects.forEach((subject) => (topicsBySubject[subject] = []));
+		const updatedPage = await updateNotionFeedbackRow('1456f2e3-a042-4a31-9853-2a60ee3f075c', {
+			message: 'otra string',
+			defaultSuggestion: 'string',
+		});
+		const responseTopics = await AirtableInstance.retrieveAirtableFeedback();
+		responseTopics.forEach((airTabletopic) => topicsBySubject[airTabletopic.subject].push(airTabletopic));
+
+		Logging.info(`${FILE_TAG}${FUNC_TAG} Returning!`);
+
+		return res.status(200).json({ updatedPage, topicsBySubject });
+	} catch (error) {
+		Logging.error((error as Error).message);
+		Logging.error(error);
+
+		res.status(500).json({
+			message: `Error retrieving data from AirTable`,
+			error: (error as Error).message,
+		});
+	}
+};
+
+const synapCustomEndpoint = async (req: Request, res: Response) => {
+	const FUNC_TAG = '.[airTableData]';
+	Logging.info(`${FILE_TAG}${FUNC_TAG} Started...`);
+
+	const url = 'https://sf6ef7oa36qazqzsbazx7jv2vy0bcldt.lambda-url.eu-west-2.on.aws/';
+	const data = {
+		portalId: '1t8EUQEApb',
+		apiKey: 'JbXdOTzd8n5VgypsB1S6l5RA5bRHEqar4KpMLO7b',
+	};
+	const headers = {
+		'Content-Type': 'application/json',
+	};
+	const timeoutInMilliseconds = 3600000; // Set timeout to 5 seconds
+
+	try {
+		const response = await axios.post(url, data, { headers, timeout: timeoutInMilliseconds });
+
+		Logging.info(response.data);
+		Logging.info(`${FILE_TAG}${FUNC_TAG} Returning!`);
+
+		return res.status(200).json({ response });
+	} catch (error) {
+		Logging.error((error as Error).message);
+		Logging.error(error);
+
+		res.status(500).json({
+			message: `Error retrieving data from custom endpoint`,
+			error: (error as Error).message,
+		});
+	}
+};
+
+export {
+	notionDbViewFeedbackRow,
+	createTableInTestPage,
+	synapDemoDataInspector,
+	insertFeedbackEntiresAutomatically,
+	airTableData,
+	synapCustomEndpoint,
+};

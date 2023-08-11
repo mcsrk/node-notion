@@ -1,4 +1,4 @@
-import { QueryDatabaseResponse } from '@notionhq/client/build/src/api-endpoints';
+import { QueryDatabaseResponse, UpdatePageParameters } from '@notionhq/client/build/src/api-endpoints';
 import { FeedbackRange } from '../entities/feedback/feedback.entity';
 import NotionInstance from '../infrastructure/notion';
 import { CreatePageParameters } from '@notionhq/client/build/src/api-endpoints';
@@ -6,6 +6,7 @@ import { CreatePageParameters } from '@notionhq/client/build/src/api-endpoints';
 import Logging from '../library/Logging';
 // Mock up
 import { mockSkillOrTopicStrategies } from '../mocks/feedback_ranges';
+import { RichTextItem } from '../entities/rich-text/rich.text';
 
 const FILE_TAG = '[FeedbackRepo]';
 
@@ -82,6 +83,29 @@ const notionFeedbackAdapter = (notionEntry: any): { [key: string]: number | stri
 		adaptedEntry['default_suggestion'] = notionEntry.default_suggestion.rich_text[0].plain_text;
 	}
 	return adaptedEntry;
+};
+
+type UpdateNotionFeedbackParams = {
+	message: string;
+	defaultSuggestion: string;
+};
+const updateNotionFeedbackRow = async (page_id: string, updateParams: UpdateNotionFeedbackParams) => {
+	const default_suggestion = new RichTextItem({ content: updateParams.defaultSuggestion });
+	const message = new RichTextItem({ content: updateParams.message });
+
+	const feedbackRowUpdate: UpdatePageParameters = {
+		page_id,
+		properties: {
+			default_suggestion: {
+				rich_text: [default_suggestion],
+			},
+			message: {
+				rich_text: [message],
+			},
+		},
+	};
+
+	return NotionInstance.updatePage(feedbackRowUpdate);
 };
 
 const getExternalFeedbackByPerformance = async (
@@ -238,4 +262,5 @@ export {
 	getExternalFeedbackByPerformance,
 	getNotionDBFeedbackRaw,
 	insertFeedbackRow,
+	updateNotionFeedbackRow,
 };
