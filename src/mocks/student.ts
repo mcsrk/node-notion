@@ -2,10 +2,15 @@ import { SUBJECTS } from '../constants/subjects';
 
 /** This student data should be recieved through the req.body of the POST request */
 export const DEMO_STUDENT_DATA = Object.freeze({
+	// user: {
+	// 	name: 'Andres Carne de Res',
+	// 	objectId: '123zxy89BRB',
+	// 	email: 'andres@gmail.com',
+	// },
 	user: {
-		name: 'Andres Carne de Res',
-		objectId: 'userID54321',
-		email: 'andres@gmail.com',
+		name: 'Jhon',
+		objectId: '123aBc45TY',
+		email: 'jhon@gmail.com',
 	},
 	grade: {
 		name: 'Year 5 Selective',
